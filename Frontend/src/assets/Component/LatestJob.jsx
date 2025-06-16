@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 export const LatestJob = () => {
   const { allJobs } = useSelector((store) => store.job);
+ 
   const navigate = useNavigate()
 
   return (

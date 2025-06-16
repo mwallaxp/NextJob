@@ -48,10 +48,11 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
         `${USER_API_END_POINT}/profile/update`,
         formData,
         {
-          // headers: {
-          //   "Content-Type": "multipart/form-data",
-          // },
-          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials:
+           true,
         }
       );
 
