@@ -1,5 +1,5 @@
 import Company from "../modules/company.model.js";
-import getDataUrl from "../utility/dataUrl.js";
+import getDataUrl from "../utility/DataUrl.js";
 import cloudinary from "../utility/Cloudinary.js";
 
 export const registerCompany = async (req, res) => {

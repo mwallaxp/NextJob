@@ -9,9 +9,8 @@ import JobRoute from "./routes/job.route.js"
 import ApplicationRouter from "./routes/appliction.router.js";
 import cookieParser from "cookie-parser";
 
-
-
 dotenv.config({})
+
 const app =express();
 
 app.use(express.json())
