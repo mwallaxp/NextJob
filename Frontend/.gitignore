@@ -23,3 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 *.env
+echo "node_modules/
+.env
+.env.local
+dist/
+build/" > .gitignore
