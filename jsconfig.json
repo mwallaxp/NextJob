@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+      "baseUrl": "./", // This sets the base path for module resolution
+      "paths": {
+        "@/components/*": ["src/components/*"], // Adjust the folder path as necessary
+        "@/lib/*": ["src/lib/*"] // Add other alias paths as needed
+      }
+    }
+  }
