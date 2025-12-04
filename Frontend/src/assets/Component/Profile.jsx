@@ -8,8 +8,7 @@ import {
 import { ApplicationJobTable } from "./ApplicationJobTable";
 import UpdateProfileDialog from "./UpdateProfileDialog";
 import { useSelector } from "react-redux";
-import { use } from "react";
-import useGetAppliedJobs from "./Hooks/useGetAppliedjobs";
+import useGetAppliedJobs from "./Hooks/useGetAppliedJobs";
 
 const skill = ["HTML", "Java", "JavaScript", "Python", "Kotlin", "Pascal"];
 const isResume = true;

@@ -10,7 +10,7 @@ import Companies from "./assets/Component/Admin/Companies.jsx";
 import CompanyCreate from "./assets/Component/Admin/CompanyCreate.jsx";
 import CompanySetUp from "./assets/Component/Admin/CompanySetUp.jsx";
 import AdminJobs from "./assets/Component/Admin/AdminJobs.jsx";
-import Applicants from "./assets/Component/Admin/applicants.jsx";
+import Applicants from "./assets/Component/Admin/Applicants.jsx";
 import PostJobs from "./assets/Component/Admin/PostJobs.jsx";
 import ProtectedRoute from "./assets/Component/Admin/ProtectRoute.jsx";
 

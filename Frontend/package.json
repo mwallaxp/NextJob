@@ -1,5 +1,6 @@
 {
   "name": "frontend",
+  "homepage":"https://mwallaxp.github.io/NextJob-Frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,7 +8,10 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.3.0",
@@ -33,9 +37,10 @@
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.14",
+    "gh-pages": "^6.3.0",
     "globals": "^15.11.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14",
-    "vite": "^5.4.10"
+    "vite": "^7.2.2"
   }
 }
