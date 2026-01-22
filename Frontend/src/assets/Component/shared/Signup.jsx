@@ -150,46 +150,46 @@ const Signup = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!validateForm()) return;
-    
-    try {
-      dispatch(setLoading(true));
-      
-      const formData = new FormData();
-      formData.append('fullname', input.fullname.trim());
-      formData.append('email', input.email.trim());
-      formData.append('phonenumber', input.phonenumber.trim());
-      formData.append('password', input.password);
-      formData.append('role', input.role.trim());
-      
-      if (input.file) {
-        formData.append('file', input.file);
-      }
-      
-      const response = await axios.post(`${USER_API_END_POINT}/registration`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data"
-        },
-        withCredentials: true,
-      });
-      
-      if (response.data.success) {
-        toast.success("Registration successful! Please login.");
-        navigate('/login');
-      } else {
-        // Handle case where success is false but no error was thrown
-        toast.error(response.data.message || "Registration failed. Please try again.");
-      }
-    } catch (error) {
-      console.error("Registration error:", error);
-      const errorMessage = error.response?.data?.message || "Registration failed. Please try again.";
-      toast.error(errorMessage);
-    } finally {
-      dispatch(setLoading(false));
+  e.preventDefault();
+
+  if (!validateForm()) return;
+
+  try {
+    dispatch(setLoading(true));
+
+    const formData = new FormData();
+    formData.append('fullname', input.fullname.trim());
+    formData.append('email', input.email.trim());
+    formData.append('phonenumber', input.phonenumber.trim());
+    formData.append('password', input.password);
+    formData.append('role', input.role.trim());
+
+    if (input.file) {
+      formData.append('file', input.file);
     }
-  };
+
+    const response = await axios.post(
+      `${USER_API_END_POINT}/registration`,
+      formData,
+      {
+        withCredentials: true
+        
+      }
+    );
+
+    toast.success("Registration successful! Please login.");
+    navigate('/login');
+
+  } catch (error) {
+    console.error("Registration error:", error);
+    const errorMessage =
+      error.response?.data?.message || "Registration failed. Please try again.";
+    toast.error(errorMessage);
+  } finally {
+    dispatch(setLoading(false));
+  }
+};
+
 
   return (
     <>
