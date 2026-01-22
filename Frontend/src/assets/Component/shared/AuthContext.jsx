@@ -6,7 +6,7 @@ import { USER_API_END_POINT } from '../../../utils/constant';
 const AuthContext = createContext();
 
 // API base URL
-const API_URL = process.env.REACT_APP_API_URL || 'https://nextjob-sw2d.onrender.com/api/v1/user';
+const API_URL = process.env.REACT_APP_API_URL || 'https://nextjob-sw2d.onrender.com';
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
