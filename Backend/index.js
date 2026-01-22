@@ -19,7 +19,7 @@ app.use(bodyParser.json())
 app.use(cookieParser());
 
 const corsOptions = {
-  origin: "http://localhost:5173", // Ensure this matches your frontend URL
+  origin: "hthttps://nextjob-sw2d.onrender.com", // Ensure this matches your frontend URL
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true, // Necessary if you need cookies or authorization headers
   allowedHeaders: ["Content-Type", "Authorization"], // Optional for more flexibility
