@@ -1,5 +1,5 @@
 import { setAllJobs } from "../../../redux/jobSlice";
-// import { JOB_API_END_POINT } from "../../../utils/constant";
+import { JOB_API_END_POINT } from "../../../utils/constant";
 import axios from "axios";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
@@ -9,25 +9,20 @@ const useGetAllJobs = () => {
 
   useEffect(() => {
     const fetchAllJobs = async () => {
-  try {
-    const res = await axios.get("https://nextjob-sw2d.onrender.com/api/v1/job/get");
-    if (res.data.success) {
-      dispatch(setAllJobs(res.data.jobs));
-    } else {
-      console.warn("Jobs fetch returned success=false:", res.data);
-      dispatch(setAllJobs([]));
-    }
-  } catch (error) {
-    if (error.response) {
-      console.error("Jobs fetch failed:", error.response.status, error.response.data);
-    } else if (error.request) {
-      console.error("No response received:", error.request);
-    } else {
-      console.error("Error setting up request:", error.message);
-    }
-    dispatch(setAllJobs([]));
-  }
-};
+      try {
+        const res = await axios.get(`https://nextjob-sw2d.onrender.com/api/v1/job/get/get`, {
+          withCredentials: true
+        });
+        
+        if (res.data.success) {
+              dispatch(setAllJobs(res.data.jobs));
+        }
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+        // Dispatch empty array on error to maintain state consistency
+        dispatch(setAllAppliedJobs([]));
+      }
+    };
 
     // Immediately invoke the async function
     fetchAllJobs();
