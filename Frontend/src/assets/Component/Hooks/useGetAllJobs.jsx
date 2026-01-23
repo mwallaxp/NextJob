@@ -7,26 +7,24 @@ import {setAllAppliedJobs} from "../../../redux/jobSlice"
 const useGetAllJobs = () => {
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    const fetchAllJobs = async () => {
-      try {
-        const res = await axios.get(`${JOB_API_END_POINT}/get`, {
-          withCredentials: true
-        });
-        
-        if (res.data.success) {
-              dispatch(setAllJobs(res.data.jobs));
-        }
-      } catch (error) {
-        console.error("Error fetching jobs:", error);
-        // Dispatch empty array on error to maintain state consistency
-        dispatch(setAllAppliedJobs([]));
-      }
-    };
+  uuseEffect(() => {
+  const fetchAllJobs = async () => {
+    try {
+      const res = await axios.get(`${JOB_API_END_POINT}/get`, {
+        withCredentials: true,
+      });
 
-    // Immediately invoke the async function
-    fetchAllJobs();
-  }, []); 
+      if (res.data.success) {
+        dispatch(setAllJobs(res.data.jobs));
+      }
+    } catch (error) {
+      console.error("Error fetching jobs:", error);
+      dispatch(setAllAppliedJobs([]));
+    }
+  };
+
+  fetchAllJobs();
+}, []);
 };
 
 export default useGetAllJobs;
