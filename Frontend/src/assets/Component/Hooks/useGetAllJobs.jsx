@@ -24,10 +24,11 @@ const useGetAllJobs = () => {
         }
       } catch (error) {
         console.error("Error fetching jobs:", {
-          message: s?.message,
-          response: s?.response?.data,
-          status: s?.response?.status,
-        });
+  message: s?.message,
+  response: s?.response?.data,
+  status: s?.response?.status,
+  error: error
+})
 
         dispatch(setAllJobs([]));
       }
