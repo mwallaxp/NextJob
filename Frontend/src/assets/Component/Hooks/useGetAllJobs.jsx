@@ -3,7 +3,6 @@ import { JOB_API_END_POINT } from "../../../utils/constant";
 import axios from "axios";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import {setAllAppliedJobs} from "../../../redux/jobSlice"
 
 const useGetAllJobs = () => {
   const dispatch = useDispatch();
@@ -12,6 +11,7 @@ const useGetAllJobs = () => {
     const fetchAllJobs = async () => {
       try {
         const token = localStorage.getItem("token");
+        if (!token) return;
 
         const res = await axios.get(`${JOB_API_END_POINT}/get`, {
           headers: {
@@ -24,7 +24,7 @@ const useGetAllJobs = () => {
         }
       } catch (error) {
         console.error("Error fetching jobs:", error);
-        dispatch(setAllAppliedJobs([]));
+        dispatch(setAllJobs([]));
       }
     };
 
