@@ -19,7 +19,7 @@ app.use(bodyParser.json())
 app.use(cookieParser());
 
 const corsOptions = {
-  origin: "https://next-job-vubs.vercel.app", // Ensure this matches your frontend URL
+  origin: process.env.CLIENT_URL || "https://next-job-vubs.vercel.app",
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true, // Necessary if you need cookies or authorization headers
   allowedHeaders: ["Content-Type", "Authorization"], // Optional for more flexibility
