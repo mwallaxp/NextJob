@@ -1,4 +1,6 @@
 import express from "express";
+import helmet from "helmet";
+import morgan from "morgan";
 import bodyParser from "body-parser";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -8,11 +10,16 @@ import companyRoute from "./routes/company.router.js";
 import JobRoute from "./routes/job.route.js"
 import ApplicationRouter from "./routes/application.route.js";
 import cookieParser from "cookie-parser";
+import globalErrorHandler from "./error.js";
 
 dotenv.config({})
 
 const app =express();
 
+app.use(helmet());
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 app.use(express.json())
 app.use(bodyParser.urlencoded({extended:true}))
 app.use(bodyParser.json())
@@ -34,8 +41,12 @@ app.use("/api/v1/company", companyRoute)
 app.use("/api/v1/job", JobRoute)
 app.use("/api/v1/application", ApplicationRouter)
 
+app.use(globalErrorHandler);
+
     
 app.listen(PORT, ()=>{
     connectDB()
     console.log(`port listing on port ${PORT}`)
 });
+
+export default app;
