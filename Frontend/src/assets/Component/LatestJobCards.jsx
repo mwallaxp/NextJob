@@ -12,9 +12,15 @@ export const LatestJobCards = ({ job }) => {
     position: "Senior",
     jobType: "Remote",
     salary: "150,000"
+    salary: "150,000",
+    location: "Nigeria"
   };
    const {user} =useSelector((store)=> store.auth)
    const navigete =useNavigate()
+
+  const { user } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
+
   //Use provided job or fallback to sample
   const jobData = job || sampleJob;
   
@@ -24,6 +30,10 @@ export const LatestJobCards = ({ job }) => {
       navigete("/Description/:id");
     } else{
       navigete("/login")
+    if (user) {
+      navigate(`/Description/${jobData._id}`);
+    } else {
+      navigate("/login");
     }
     
   };
@@ -32,15 +42,20 @@ export const LatestJobCards = ({ job }) => {
     <div 
       onClick={handleClick}
       key={job._id} 
+      onKeyDown={(e) => e.key === 'Enter' && handleClick()}
+      role="button"
+      tabIndex={0}
       className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 p-6 border border-gray-100 cursor-pointer overflow-hidden"
     >
       {/* Company and Location */}
       <div className="flex justify-between items-start mb-3">
         <div>
           <h1 className="font-semibold text-lg text-gray-900">{jobData.company?.name}</h1>
+          <h2 className="font-semibold text-lg text-gray-900">{jobData.company?.name}</h2>
           <div className="flex items-center text-sm text-gray-500 mt-1">
             <MapPin size={14} className="mr-1" />
             <h1>Nigeria</h1>
+            <span>{jobData.location || "Remote"}</span>
           </div>
         </div>
         <span className="inline-flex items-center bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full">
@@ -52,6 +67,8 @@ export const LatestJobCards = ({ job }) => {
       <div className="my-4">
         <h1 className="font-bold text-xl mb-2 text-gray-800">{jobData.title}</h1>
         <h1 className="text-sm text-gray-600 line-clamp-2">{jobData.description}</h1>
+        <h3 className="font-bold text-xl mb-2 text-gray-800">{jobData.title}</h3>
+        <p className="text-sm text-gray-600 line-clamp-2">{jobData.description}</p>
       </div>
       
       {/* Job Details Badges */}
@@ -75,6 +92,7 @@ export const LatestJobCards = ({ job }) => {
       {/* Apply Button */}
       <div className="mt-5 pt-4 border-t border-gray-100">
         <button onClick={handleClick} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg font-medium transition-colors duration-300">
+        <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg font-medium transition-colors duration-300">
           Apply Now
         </button>
       </div>
