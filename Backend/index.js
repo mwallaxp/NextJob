@@ -6,7 +6,7 @@ import connectDB from "./utility/db.js"
 import userRouter from "./routes/user.route.js"
 import companyRoute from "./routes/company.router.js";
 import JobRoute from "./routes/job.route.js"
-import ApplicationRouter from "./routes/appliction.router.js";
+import ApplicationRouter from "./routes/application.route.js";
 import cookieParser from "cookie-parser";
 
 dotenv.config({})
