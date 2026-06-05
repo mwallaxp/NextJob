@@ -35,9 +35,7 @@ export const JobDescription = () => {
 
     setApplying(true);
     try {
-      const res = await axios.post(`${APPLICATION_API_END_POINT}/apply/${jobId}`, {}, { // Changed to POST and added an empty body
-        withCredentials: true,
-      });
+      const res = await axios.post(`${APPLICATION_API_END_POINT}/apply/${jobId}`, {});
       
       if (res.data.success) {
         setHasApplied(true);
@@ -69,9 +67,7 @@ export const JobDescription = () => {
       }
 
       try {
-        const res = await axios.get(`${JOB_API_END_POINT}/get/${jobId}`, {
-          withCredentials: true,
-        });
+        const res = await axios.get(`${JOB_API_END_POINT}/get/${jobId}`);
         
         if (res.data.success && res.data.job) {
           dispatch(setSingleJob(res.data.job));

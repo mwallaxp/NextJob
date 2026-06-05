@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "../../../utils/api";
 import { useEffect } from "react";
 import React from 'react'
 import { useDispatch } from "react-redux";
@@ -11,7 +11,7 @@ const useGetAppliedJobs = () => {
     useEffect (()=>{
         const fectAppliedJob = async () =>{
             try {
-                const res = await axios.get(`${APPLICATION_API_END_POINT}/get`, {withCredentials:true})
+                const res = await api.get(`${APPLICATION_API_END_POINT}/get`)
                 if(res.data.success)
                     console.log("succesfull")
                 dispatch(setAllAppliedJobs(res.data.applications))

@@ -6,6 +6,9 @@ import Jobs from "./assets/Component/Jobs.jsx";
 import Browse from "./assets/Component/Browse.jsx";
 import Profile from "./assets/Component/Profile.jsx";
 import Dashboard from "./assets/Component/Dashboard.jsx";
+import SavedJobs from "./assets/Component/SavedJobs.jsx";
+import Notifications from "./assets/Component/Notifications.jsx";
+import CompanyPage from "./assets/Component/CompanyPage.jsx";
 import JobDescription from "./assets/Component/JobDescription.jsx";
 import Companies from "./assets/Component/Admin/Companies.jsx";
 import CompanyCreate from "./assets/Component/Admin/CompanyCreate.jsx";
@@ -55,6 +58,18 @@ const appRouter = createBrowserRouter([
       {
         path: "dashboard",
         element: <Dashboard />,
+      },
+      {
+        path: "saved",
+        element: <SavedJobs />,
+      },
+      {
+        path: "notifications",
+        element: <Notifications />,
+      },
+      {
+        path: "company/:id",
+        element: <CompanyPage />,
       },
       {
         path: "admin",

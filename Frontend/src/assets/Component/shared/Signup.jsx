@@ -169,11 +169,7 @@ const Signup = () => {
 
     await axios.post(
       `${USER_API_END_POINT}/registration`,
-      formData,
-      {
-        withCredentials: true
-        
-      }
+      formData
     );
 
     toast.success("Registration successful! Please login.");

@@ -1,12 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../../utils/api';
 import { USER_API_END_POINT } from '../../../utils/constant';
 
 // Create auth context
 const AuthContext = createContext();
-
-// API base URL
-const API_URL = process.env.REACT_APP_API_URL || 'https://nextjob-sw2d.onrender.com';
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -16,30 +13,17 @@ export const AuthProvider = ({ children }) => {
   // Initialize auth state on component mount
   useEffect(() => {
     const initAuth = async () => {
-      // Check for existing token in localStorage
-      const token = localStorage.getItem('token');
-      
-      if (token) {
-        // Set default auth header
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      try {
+        // The browser will automatically send the 'token' cookie if it exists
+        const response = await api.get('/api/v1/user/current');
         
-        try {
-          // Validate token and fetch current user
-          const response = await axios.get(`${API_URL}/api/users/current`);
-          
-          if (response.data.success) {
-            setCurrentUser(response.data.user);
-          } else {
-            // Clear invalid token
-            localStorage.removeItem('token');
-            delete axios.defaults.headers.common['Authorization'];
-          }
-        } catch (err) {
-          console.error('Authentication error:', err);
-          // Clear token on auth error
-          localStorage.removeItem('token');
-          delete axios.defaults.headers.common['Authorization'];
+        if (response.data.success) {
+          setCurrentUser(response.data.user);
         }
+      } catch (err) {
+        // 401/404 means no valid cookie exists, which is fine for init
+        console.log('Not authenticated via cookies');
+        setCurrentUser(null);
       }
       
       setLoading(false);
@@ -65,7 +49,7 @@ export const AuthProvider = ({ children }) => {
         formData.append('profilePhoto', profilePhoto);
       }
       
-      const response = await axios.post(`${API_URL}/api/users/register`, formData, {
+      const response = await api.post('/api/users/register', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -75,9 +59,6 @@ export const AuthProvider = ({ children }) => {
         // Store token
         const { token, user } = response.data;
         localStorage.setItem('token', token);
-        
-        // Set default auth header
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
         // Update current user
         setCurrentUser(user);
@@ -97,7 +78,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password, role) => {
     setError(null);
     try {
-      const response = await axios.post(`${USER_API_END_POINT}/login`, {
+      const response = await api.post(`${USER_API_END_POINT}/login`, {
         email,
         password,
         role
@@ -107,9 +88,6 @@ export const AuthProvider = ({ children }) => {
         // Store token
         const { token, user } = response.data;
         localStorage.setItem('token', token);
-        
-        // Set default auth header
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
         // Update current user
         setCurrentUser(user);
@@ -128,13 +106,12 @@ export const AuthProvider = ({ children }) => {
   // Logout user
   const logout = async () => {
     try {
-      await axios.post(`${USER_API_END_POINT}/logout`);
+      await api.post(`${USER_API_END_POINT}/logout`);
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
       // Always clear local state regardless of API response
       localStorage.removeItem('token');
-      delete axios.defaults.headers.common['Authorization'];
       setCurrentUser(null);
     }
   };
@@ -156,7 +133,7 @@ export const AuthProvider = ({ children }) => {
         formData.append('resume', resume);
       }
       
-      const response = await axios.put(`${USER_API_END_POINT}/profile`, formData, {
+      const response = await api.put(`${USER_API_END_POINT}/profile`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import User from "../modules/user.module.js";
 import jwt from "jsonwebtoken";
 import cloudinary from "../utility/Cloudinary.js";
+import getDataUrl from "../utility/DataUrl.js";
 
 export const registration = async (req, res) => {
   try {
@@ -93,11 +94,12 @@ export const registration = async (req, res) => {
       expiresIn: "1d",
     });
 
+    const isProduction = process.env.NODE_ENV === "production";
     res.cookie("token", token, {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
     });
 
     return res.status(201).json({
@@ -183,12 +185,13 @@ export const login = async (req, res) => {
       expiresIn: "1d",
     });
 
+    const isProduction = process.env.NODE_ENV === "production";
     // Set cookie
     res.cookie("token", token, {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Only send over HTTPS in production
-      sameSite: "strict",
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
     });
 
     // Send response
@@ -244,7 +247,7 @@ export const logout = async (req, res) => {
  */
 export const getCurrentUser = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.id;
 
     const user = await User.findById(userId).select("-password");
 
@@ -287,14 +290,8 @@ export const updateProfile = async (req, res) => {
     // Process resume file if provided
     if (req.file) {
       try {
-        // Assuming getDataUrl converts file to a data URI (replace with your implementation)
-        const getDataUrl = (file) => {
-          const buffer = file.buffer.toString('base64');
-          return { content: `data:${file.mimetype};base64,${buffer}` };
-        };
-
-        const dataUri = getDataUrl(req.file);
-        const cloudResponse = await cloudinary.uploader.upload(dataUri.content, {
+        const dataUriContent = getDataUrl(req.file);
+        const cloudResponse = await cloudinary.uploader.upload(dataUriContent, {
           folder: "user-resumes",
           resource_type: "auto",
         });

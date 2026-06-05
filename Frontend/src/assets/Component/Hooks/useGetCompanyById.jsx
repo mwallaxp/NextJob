@@ -4,7 +4,6 @@ import { COMPANY_API_END_POINT } from "../../../utils/constant";
 import { useDispatch } from "react-redux";
 import { setAllJobs } from "../../../redux/jobSlice";
 import { setSingleCompany } from "../../../redux/companySlice";
-// import { useEffect } from 'react';
 
 export const useGetCompanyById = (ComapanyId) => {
   const dispatch = useDispatch(); // Invoke useDispatch to get the dispatch function
@@ -13,8 +12,7 @@ export const useGetCompanyById = (ComapanyId) => {
     const fetchSingleCompany = async () => {
       try {
         const res = await axios.get(
-          `${COMPANY_API_END_POINT}/get${ComapanyId}`,
-          { withCredentials: true }
+          `${COMPANY_API_END_POINT}/get/${ComapanyId}`
         );
         console.log(res.data.company);
         if (res.data.success) {

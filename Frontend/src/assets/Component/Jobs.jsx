@@ -7,24 +7,49 @@ import { motion } from 'framer-motion'
 export const Jobs = () => {
   const { allJobs, searchedQuery } = useSelector((store) => store.job);
   const [filter, setFilter] = useState(allJobs);
+  const [activeFilters, setActiveFilters] = useState({
+    Location: [],
+    "Job type": [],
+    Salary: [],
+  });
 
   useEffect(() => {
     let filteredJobs = allJobs;
-    
+
     if (searchedQuery) {
-      filteredJobs = allJobs?.filter((job) => {
-        
+      const query = searchedQuery.toLowerCase();
+      filteredJobs = filteredJobs?.filter((job) => {
         return (
-          job?.title?.toLowerCase().includes(searchedQuery.toLowerCase()) ||
-          job?.description?.toLowerCase().includes(searchedQuery.toLowerCase()) ||
-          job?.location?.toLowerCase().includes(searchedQuery.toLowerCase()) ||
-          job?.jobType?.toLowerCase().includes(searchedQuery.toLowerCase())
+          job?.title?.toLowerCase().includes(query) ||
+          job?.description?.toLowerCase().includes(query) ||
+          job?.location?.toLowerCase().includes(query) ||
+          job?.jobType?.toLowerCase().includes(query) ||
+          job?.company?.name?.toLowerCase().includes(query)
         );
       });
     }
-    
+
+    if (activeFilters.Location.length) {
+      filteredJobs = filteredJobs?.filter((job) =>
+        activeFilters.Location.includes(job?.location) ||
+        activeFilters.Location.includes(job?.company?.location)
+      );
+    }
+
+    if (activeFilters["Job type"].length) {
+      filteredJobs = filteredJobs?.filter((job) =>
+        activeFilters["Job type"].includes(job?.jobType)
+      );
+    }
+
+    if (activeFilters.Salary.length) {
+      filteredJobs = filteredJobs?.filter((job) =>
+        activeFilters.Salary.some((salary) => job?.salary?.toString()?.includes(salary.split("-")[0]))
+      );
+    }
+
     setFilter(filteredJobs);
-  }, [allJobs, searchedQuery]);
+  }, [allJobs, searchedQuery, activeFilters]);
 
   return (
     <div>
@@ -35,7 +60,7 @@ export const Jobs = () => {
         </div>
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
           <div>
-            <FilterCard />
+            <FilterCard onFilterChange={setActiveFilters} />
           </div>
           
           {filter?.length === 0 ? (

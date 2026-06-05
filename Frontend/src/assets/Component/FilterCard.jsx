@@ -8,69 +8,98 @@ const FilterData = [
     Array: ["Abuja", "Lagos", "Kano", "Port Harcourt", "Calabar", "Remote"],
   },
   {
-    FilterType: "Industry",
-    Array: [
-      "Frontend",
-      "Backend Developer",
-      "Full Stack",
-      "MERN Stack",
-      "Data Analysis",
-    ],
+    FilterType: "Job type",
+    Array: ["Full-time", "Part-time", "Remote", "Contract"],
   },
   {
     FilterType: "Salary",
     Array: ["500k-1m", "2M-5M", "6M-40M", "50M-120M"],
   },
 ];
-export const FilterCard = () => {
-  const [selectedValue, setSelectedvalue] = useState("");
+
+export const FilterCard = ({ onFilterChange }) => {
+  const [searchText, setSearchText] = useState("");
+  const [activeFilters, setActiveFilters] = useState({
+    Location: [],
+    "Job type": [],
+    Salary: [],
+  });
   const dispatch = useDispatch();
 
-  const ChangeHandler = (value) => {
-    setSelectedvalue(value);
+  const toggleFilter = (type, value) => {
+    setActiveFilters((prev) => {
+      const nextOptions = prev[type].includes(value)
+        ? prev[type].filter((item) => item !== value)
+        : [...prev[type], value];
+      return { ...prev, [type]: nextOptions };
+    });
+  };
+
+  const clearFilters = () => {
+    setSearchText("");
+    setActiveFilters({
+      Location: [],
+      "Job type": [],
+      Salary: [],
+    });
   };
 
   useEffect(() => {
-    dispatch(setSearchedQuery(selectedValue));
-  }, [dispatch, selectedValue]);
+    dispatch(setSearchedQuery(searchText));
+    onFilterChange?.(activeFilters);
+  }, [dispatch, searchText, activeFilters, onFilterChange]);
 
   return (
     <aside className="w-full rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between">
         <h2 className="font-bold text-slate-950">Filter jobs</h2>
-        {selectedValue && (
+        {(searchText || Object.values(activeFilters).some((items) => items.length > 0)) && (
           <button
             type="button"
-            onClick={() => setSelectedvalue("")}
+            onClick={clearFilters}
             className="text-sm font-semibold text-blue-600 hover:text-blue-700"
           >
-            Clear
+            Clear all
           </button>
         )}
       </div>
-      <div className="mt-4 space-y-5">
+
+      <div className="mt-4">
+        <label htmlFor="job-search" className="block text-sm font-medium text-slate-700">
+          Search roles
+        </label>
+        <input
+          id="job-search"
+          type="text"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          placeholder="Search jobs, skills, companies"
+          className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+        />
+      </div>
+
+      <div className="mt-6 space-y-5">
         {FilterData.map((data, index) => (
           <div key={index}>
             <h3 className="text-sm font-bold text-slate-800">{data.FilterType}</h3>
-            {data.Array.map((item, itemIndex) => {
-              const itemid = `${data.FilterType}-${itemIndex}`;
-              return(
-              <div className="my-2 flex items-center gap-2" key={item}>
-                <input
-                  type="radio"
-                  id={itemid}
-                  name="job-filter"
-                  value={item}
-                  checked={selectedValue === item}
-                  onChange={() => ChangeHandler(item)}
-                  className="h-4 w-4 accent-blue-600"
-                />
-                
-                <label htmlFor={itemid} className="cursor-pointer text-sm text-slate-600">
-                  {item}
-                </label>
-              </div>
-)})}
+            <div className="mt-3 grid gap-2">
+              {data.Array.map((item) => {
+                const itemId = `${data.FilterType}-${item}`;
+                const checked = activeFilters[data.FilterType]?.includes(item);
+                return (
+                  <label key={itemId} htmlFor={itemId} className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                    <input
+                      type="checkbox"
+                      id={itemId}
+                      checked={checked}
+                      onChange={() => toggleFilter(data.FilterType, item)}
+                      className="h-4 w-4 accent-blue-600"
+                    />
+                    {item}
+                  </label>
+                );
+              })}
+            </div>
           </div>
         ))}
       </div>

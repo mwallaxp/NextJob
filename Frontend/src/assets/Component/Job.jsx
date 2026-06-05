@@ -1,8 +1,10 @@
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Bookmark, Building2, MapPin } from "lucide-react";
 
 const Job = ({ job }) => {
   const navigate = useNavigate();
+  const [savedJobs, setSavedJobs] = useState([]);
 
   const displayCreatedDate = (createdAt) => {
     if (!createdAt) return "Date not available";
@@ -12,6 +14,25 @@ const Job = ({ job }) => {
     const daysAgo = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
     return daysAgo === 0 ? "Today" : `${daysAgo} days ago`;
   };
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem("nextjobSavedJobs") || "[]";
+    setSavedJobs(JSON.parse(stored));
+  }, []);
+
+  const toggleSavedJob = () => {
+    const jobId = job?._id || job?.id;
+    if (!jobId) return;
+
+    const nextSaved = savedJobs.includes(jobId)
+      ? savedJobs.filter((id) => id !== jobId)
+      : [...savedJobs, jobId];
+
+    setSavedJobs(nextSaved);
+    window.localStorage.setItem("nextjobSavedJobs", JSON.stringify(nextSaved));
+  };
+
+  const isSaved = job && savedJobs.includes(job._id || job.id);
 
   if (!job) {
     return <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">No job data available</div>;
@@ -40,7 +61,13 @@ const Job = ({ job }) => {
           </div>
         )}
         <div>
-          <h2 className="font-semibold text-slate-950">{job?.company?.name || "Independent Client"}</h2>
+          {job?.company?._id ? (
+            <Link to={`/company/${job.company._id}`} className="font-semibold text-slate-950 hover:text-blue-600">
+              {job?.company?.name || "Independent Client"}
+            </Link>
+          ) : (
+            <h2 className="font-semibold text-slate-950">{job?.company?.name || "Independent Client"}</h2>
+          )}
           <p className="flex items-center gap-1 text-sm text-slate-500"><MapPin size={14} />{job?.location || job?.company?.location || "Remote"}</p>
         </div>
       </div>
@@ -67,8 +94,15 @@ const Job = ({ job }) => {
           Details
           <ArrowRight size={16} />
         </button>
-        <button className="rounded-md border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-          Save
+        <button
+          onClick={toggleSavedJob}
+          className={`rounded-md border px-4 py-2.5 text-sm font-semibold transition ${
+            isSaved
+              ? "border-blue-600 bg-blue-50 text-blue-700 hover:bg-blue-100"
+              : "border-slate-200 text-slate-700 hover:bg-slate-50"
+          }`}
+        >
+          {isSaved ? "Saved" : "Save"}
         </button>
       </div>
     </article>
