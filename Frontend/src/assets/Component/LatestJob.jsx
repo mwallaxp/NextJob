@@ -1,21 +1,23 @@
-import React from 'react';
 import { LatestJobCards } from './LatestJobCards';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 
 export const LatestJob = () => {
   const { allJobs } = useSelector((store) => store.job);
- 
-  const navigate = useNavigate()
 
   return (
-    <div className="max-w-7xl mx-auto py-12 px-6">
-      <h1 className="text-4xl font-extrabold text-gray-800 text-center mb-8">
-        <span className="bg-blue-600 text-white px-2 py-1 rounded-md">Latest</span> & Top Job Openings
-      </h1>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <section className="mx-auto max-w-7xl px-6 py-14">
+      <div className="mb-8 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">Fresh opportunities</p>
+          <h2 className="mt-2 text-3xl font-black text-slate-950 sm:text-4xl">Latest freelance openings</h2>
+        </div>
+        <p className="max-w-xl text-sm leading-6 text-slate-600">
+          Browse current roles with clear job type, pay, and location signals before you commit time to applying.
+        </p>
+      </div>
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {allJobs.length === 0 ? (
-          <div className="col-span-full text-center text-gray-500">
+          <div className="col-span-full rounded-lg border border-dashed border-slate-300 bg-slate-50 p-10 text-center text-slate-500">
             <span>No job openings available at the moment. Please check back later!</span>
           </div>
         ) : (
@@ -24,6 +26,6 @@ export const LatestJob = () => {
           ))
         )}
       </div>
-    </div>
+    </section>
   );
 };

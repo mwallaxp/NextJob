@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import NavBar from "../shared/NavBar";
 import CompaniesTable from "./CompaniesTable";
 import { useNavigate } from "react-router-dom";
 import useGetAllCompanies from "../Hooks/useGetAllCompanies";
@@ -18,14 +17,21 @@ useEffect(()=>{
 
   return (
     <div>
-      <NavBar />
       <div className="max-w-6xl mx-auto my-10">
-        <div className="flex justify-between items-center">
-          <input type="text" className="w-fit" placeholder="fill by name" />
+<div className="flex flex-wrap gap-4 justify-between items-center">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            className="w-full max-w-sm rounded-lg border border-slate-300 px-4 py-3 shadow-sm focus:border-blue-500 focus:outline-none"
+            placeholder="Search companies by name"
+          />
 
-          <button className=" bg-black text-white w-auto p-2 rounded-lg" 
-          onChange={(e)=>setInput(e.target.value)}
-          onClick={()=>navigate("/Admin/Companies/create")}>
+          <button
+            type="button"
+            className="rounded-lg bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+            onClick={() => navigate("/admin/companies/create")}
+          >
             New company
           </button>
 

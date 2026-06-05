@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import NavBar from "./shared/NavBar";
+import { useEffect, useState } from "react";
 import { FilterCard } from "./FilterCard";
 import Job from "./Job";
 import { useSelector } from "react-redux";
@@ -16,9 +15,10 @@ export const Jobs = () => {
       filteredJobs = allJobs?.filter((job) => {
         
         return (
-          job?.title.toLowerCase().includes(searchedQuery.toLowerCase()) ||
-          job?.description.toLowerCase().includes(searchedQuery.toLowerCase()) ||
-          job?.location.toLowerCase().includes(searchedQuery.toLowerCase())
+          job?.title?.toLowerCase().includes(searchedQuery.toLowerCase()) ||
+          job?.description?.toLowerCase().includes(searchedQuery.toLowerCase()) ||
+          job?.location?.toLowerCase().includes(searchedQuery.toLowerCase()) ||
+          job?.jobType?.toLowerCase().includes(searchedQuery.toLowerCase())
         );
       });
     }
@@ -28,18 +28,21 @@ export const Jobs = () => {
 
   return (
     <div>
-      <NavBar />
-      <div className="max-w-7xl mx-auto mt-5">
-        <div className="flex gap-5">
-          <div className="w-20%">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+        <div className="mb-6">
+          <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">Browse work</p>
+          <h1 className="mt-2 text-3xl font-black text-slate-950">Find your next project</h1>
+        </div>
+        <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+          <div>
             <FilterCard />
           </div>
           
           {filter?.length === 0 ? (
-            <span>No jobs found</span>
+            <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-10 text-center text-slate-500">No jobs found</div>
           ) : (
-            <div className="flex-1 h-[88vh] overflow-y-auto pb-5">
-              <div className="grid grid-cols-3 gap-4">
+            <div className="pb-5">
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {filter?.map((job) => (
                   <motion.div
                     initial={{ opacity: 0, x: 100 }}
@@ -55,7 +58,7 @@ export const Jobs = () => {
             </div>
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 };

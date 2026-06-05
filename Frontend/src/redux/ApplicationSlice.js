@@ -1,15 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
-import reducer from "./authSlice";
-const ApplicatonSlice = createSlice({
+const ApplicationSlice = createSlice({
   name: "Application",
   initialState: {
     Applicants: [],
   },
   reducers: {
-    setAllApplicats: (state, action) => {
+    setAllApplicants: (state, action) => {
       state.Applicants = action.payload;
     },
   },
 });
-export const { setAllApplicants } = ApplicatonSlice.actions;
-export default ApplicatonSlice.reducer;
+export const { setAllApplicants } = ApplicationSlice.actions;
+export default ApplicationSlice.reducer;

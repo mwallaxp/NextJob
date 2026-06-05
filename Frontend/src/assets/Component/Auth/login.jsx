@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { setLoading, setUser } from "../../../redux/authSlice";
 import { toast } from 'react-toastify';
-import NavBar from "../shared/NavBar";
 import { USER_API_END_POINT } from "../../../utils/constant";
 import { Shield, Mail, Lock, User, Building } from "lucide-react";
 
@@ -15,16 +14,15 @@ const Login = () => {
     role: "student", // Set default role
   });
   const [errors, setErrors] = useState({});
-  const [showPassword, setShowPassword] = useState(false);
-
-  const { loading, user } = useSelector((state) => state.auth.loading);
+  const { loading, user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      navigate('/');
+      const destination = user.role === 'recruiter' ? '/admin' : '/';
+      navigate(destination);
     }
   }, [user, navigate]);
 
@@ -90,7 +88,8 @@ const Login = () => {
       if (response.data.success) {
         dispatch(setUser(response.data.user));
         toast.success("Login successful!");
-        navigate("/");
+        const destination = response.data.user.role === 'recruiter' ? '/admin' : '/';
+        navigate(destination);
       }
     } catch (error) {
       // Handle error gracefully
@@ -103,7 +102,6 @@ const Login = () => {
 
   return (
     <>
-      <NavBar />
       <div className="flex min-h-screen bg-gray-50">
         {/* Left section - Image and security messaging */}
         <div className="hidden lg:flex lg:w-1/2 bg-blue-600 flex-col justify-center items-center text-white p-12">
@@ -310,7 +308,7 @@ const Login = () => {
               </div>
 
               <p className="mt-6 text-center text-sm text-gray-600">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-500">
                   Sign up
                 </Link>

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import NavBar from "./shared/NavBar";
 import {
   MailIcon,
   Pen,
@@ -21,7 +20,6 @@ const Profile = () => {
 
   return (
     <div>
-      <NavBar />
       {/* Profile Section */}
       <section className="max-w-7xl mx-auto bg-gray-50 border border-gray-200 shadow-md rounded-xl my-6 p-8">
         <div className="flex justify-between items-center">

@@ -82,14 +82,14 @@ const AdminJobsTable = () => {
                   {isPopoverOpen === job._id && (
                     <div className="absolute right-6 top-14 z-10 bg-white border border-gray-200 rounded-lg shadow-lg py-2 w-48">
                       <button
-                        onClick={() => navigate(`/Admin/jobs/${job._id}/edit`)}
+                        onClick={() => navigate(`/admin/jobs/${job._id}/edit`)}
                         className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2"
                       >
                         <Edit2 className="w-4 h-4" />
                         Edit Job
                       </button>
                       <button
-                        onClick={() => navigate(`/Admin/jobs/${job._id}/applicants`)}
+                        onClick={() => navigate(`/admin/jobs/${job._id}/applicants`)}
                         className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2"
                       >
                         <Eye className="w-4 h-4" />

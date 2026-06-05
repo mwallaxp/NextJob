@@ -2,7 +2,10 @@ import jwt from 'jsonwebtoken';
 
 export const isAuthenticate = (req, res, next) => {
 
-  const token = req?.cookies?.token;
+  const bearerToken = req.headers.authorization?.startsWith("Bearer ")
+    ? req.headers.authorization.split(" ")[1]
+    : null;
+  const token = req?.cookies?.token || bearerToken;
 
   if (!token) {
     return res.status(401).json({
@@ -15,7 +18,6 @@ export const isAuthenticate = (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
     if (!decoded){
-      console.error("Token verification failed:", error);
     return res.status(401).json({
       message: "Authentication failed! Invalid or expired token.",
       success: false,
@@ -25,7 +27,10 @@ export const isAuthenticate = (req, res, next) => {
     next();
   }
   catch (error){
-    console.log(error)
+    return res.status(401).json({
+      message: "Authentication failed! Invalid or expired token.",
+      success: false,
+    });
   }
  
 }

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import NavBar from "../shared/NavBar";
 import { ArrowLeft, Upload, CheckCircle, AlertCircle, Building, Globe, MapPin, FileText } from "lucide-react";
 import axios from "axios";
 import { COMPANY_API_END_POINT } from "../../../utils/constant";
@@ -391,7 +390,6 @@ const CompanySetUp = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <NavBar />
       <div className="max-w-3xl mx-auto my-10 px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-center space-x-2">
           <button

@@ -35,7 +35,7 @@ export const JobDescription = () => {
 
     setApplying(true);
     try {
-      const res = await axios.get(`${APPLICATION_API_END_POINT}/apply/${jobId}`, {
+      const res = await axios.post(`${APPLICATION_API_END_POINT}/apply/${jobId}`, {}, { // Changed to POST and added an empty body
         withCredentials: true,
       });
       

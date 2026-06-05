@@ -1,26 +1,21 @@
-import React from "react";
 import Job from "./Job";
-import { Divide } from "lucide-react";
-import NavBar from "./shared/NavBar";
 import { useSelector } from "react-redux";
 import useGetAllJobs from "./Hooks/useGetAllJobs";
-
-const randomJobs = [1, 2, 3, 4];
 
 const Browse = () => {
   const {allJobs}= useSelector(Store=>Store.job)
 useGetAllJobs()
   return (
     <div>
-        <NavBar/>
-    <div className="max-w-7xl mx-auto">
-      <h1 className="font-bold text-xl my-10">Search Result ({allJobs.length})</h1>
-      <div className="grid grid-cols-3 gap-4 mt-4">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+      <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">Search results</p>
+      <h1 className="mt-2 text-3xl font-black text-slate-950">{allJobs.length} opportunities found</h1>
+      <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {allJobs.map((job) => {
-          return <Job key={job.id} job={job} />
+          return <Job key={job._id} job={job} />
         })}
       </div>
-    </div>
+    </main>
     </div>
   );
 };

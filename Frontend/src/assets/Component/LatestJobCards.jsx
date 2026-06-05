@@ -1,42 +1,23 @@
-import { MapPin, Clock, DollarSign, Briefcase } from "lucide-react";
+import { ArrowRight, Briefcase, Clock, DollarSign, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 export const LatestJobCards = ({ job }) => {
-  //Using a sample job for preview if none is provided
-  const sampleJob = {
-    _id: "sample123",
-    company: { name: "Design Studio" },
-    title: "UI/UX Designer",
-    description: "Create modern user interfaces and experiences for web and mobile applications",
-    position: "Senior",
-    jobType: "Remote",
-    salary: "150,000"
-    salary: "150,000",
-    location: "Nigeria"
-  };
-   const {user} =useSelector((store)=> store.auth)
-   const navigete =useNavigate()
-
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
-  //Use provided job or fallback to sample
-  const jobData = job || sampleJob;
-  
-
   const handleClick = () => {
-    if(user){
-      navigete("/Description/:id");
-    } else{
-      navigete("/login")
     if (user) {
-      navigate(`/Description/${jobData._id}`);
+      navigate(`/description/${job._id}`);
     } else {
       navigate("/login");
     }
-    
   };
+
+  if (!job) return null;
+
+  const companyName = job.company?.name || "Independent Client";
+  const location = job.location || job.company?.location || "Remote";
   
   return (
     <div 
@@ -45,55 +26,54 @@ export const LatestJobCards = ({ job }) => {
       onKeyDown={(e) => e.key === 'Enter' && handleClick()}
       role="button"
       tabIndex={0}
-      className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 p-6 border border-gray-100 cursor-pointer overflow-hidden"
+      className="group flex h-full flex-col rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl cursor-pointer"
     >
-      {/* Company and Location */}
-      <div className="flex justify-between items-start mb-3">
-        <div>
-          <h1 className="font-semibold text-lg text-gray-900">{jobData.company?.name}</h1>
-          <h2 className="font-semibold text-lg text-gray-900">{jobData.company?.name}</h2>
-          <div className="flex items-center text-sm text-gray-500 mt-1">
-            <MapPin size={14} className="mr-1" />
-            <h1>Nigeria</h1>
-            <span>{jobData.location || "Remote"}</span>
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-slate-900">{companyName}</p>
+          <div className="mt-1 flex items-center text-sm text-slate-500">
+            <MapPin size={15} className="mr-1.5 shrink-0" />
+            <span className="truncate">{location}</span>
           </div>
         </div>
-        <span className="inline-flex items-center bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full">
+        <span className="inline-flex shrink-0 items-center rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
           Featured
         </span>
       </div>
       
-      {/* Job Title and Description */}
-      <div className="my-4">
-        <h1 className="font-bold text-xl mb-2 text-gray-800">{jobData.title}</h1>
-        <h1 className="text-sm text-gray-600 line-clamp-2">{jobData.description}</h1>
-        <h3 className="font-bold text-xl mb-2 text-gray-800">{jobData.title}</h3>
-        <p className="text-sm text-gray-600 line-clamp-2">{jobData.description}</p>
+      <div className="flex-1">
+        <h3 className="text-lg font-bold leading-snug text-slate-950">{job.title}</h3>
+        <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">{job.description}</p>
       </div>
       
-      {/* Job Details Badges */}
-      <div className="flex flex-wrap gap-2 mt-4">
-        <div className="flex items-center bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full text-xs font-medium">
-          <Briefcase size={14} className="mr-1" />
-          {jobData.position || "Position"}
+      <div className="mt-5 flex flex-wrap gap-2">
+        <div className="flex items-center rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700">
+          <Briefcase size={14} className="mr-1.5" />
+          {job.position || "Open role"}
         </div>
         
-        <div className="flex items-center bg-purple-50 text-purple-700 px-3 py-1.5 rounded-full text-xs font-medium">
-          <Clock size={14} className="mr-1" />
-          {jobData.jobType}
+        <div className="flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700">
+          <Clock size={14} className="mr-1.5" />
+          {job.jobType || "Flexible"}
         </div>
         
-        <div className="flex items-center bg-green-50 text-green-700 px-3 py-1.5 rounded-full text-xs font-medium">
-          <DollarSign size={14} className="mr-1" />
-          {jobData.salary} 
+        <div className="flex items-center rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">
+          <DollarSign size={14} className="mr-1.5" />
+          {job.salary || "Negotiable"} 
         </div>
       </div>
       
-      {/* Apply Button */}
-      <div className="mt-5 pt-4 border-t border-gray-100">
-        <button onClick={handleClick} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg font-medium transition-colors duration-300">
-        <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg font-medium transition-colors duration-300">
-          Apply Now
+      <div className="mt-5 border-t border-slate-100 pt-4">
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            handleClick();
+          }}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+        >
+          View opportunity
+          <ArrowRight size={16} />
         </button>
       </div>
     </div>

@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import NavBar from "../shared/NavBar";
 import ApplicantTable from "./ApplicantTable";
 import axios from "axios";
 import { APPLICATION_API_END_POINT } from "../../../utils/constant";
@@ -32,7 +31,6 @@ const Applicants = () => {
 
   return (
     <div>
-      <NavBar />
       <div className="items-center max-w-7xl mx-auto">
         <h1 className="font-bold text-xl my-5">
           Applications ({application?.length || 0})

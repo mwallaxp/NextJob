@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { setLoading } from "../../../redux/authSlice";
 import { toast } from 'react-toastify';
-import NavBar from "./NavBar";
 import { USER_API_END_POINT } from "../../../utils/constant";
 import { Shield, User, Mail, Phone, Lock, Upload, Building, CheckCircle } from "lucide-react";
 
@@ -27,7 +26,7 @@ const Signup = () => {
   });
 
   // Fix the selector issue here
-  const { loading, user } = useSelector((state) => state.auth.loading);
+  const { loading, user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -168,7 +167,7 @@ const Signup = () => {
       formData.append('file', input.file);
     }
 
-    const response = await axios.post(
+    await axios.post(
       `${USER_API_END_POINT}/registration`,
       formData,
       {
@@ -193,7 +192,6 @@ const Signup = () => {
 
   return (
     <>
-      <NavBar />
       <div className="flex min-h-screen bg-gray-50">
         {/* Left section - Image and security messaging */}
         <div className="hidden lg:flex lg:w-1/2 bg-blue-600 flex-col justify-center items-center text-white p-12">

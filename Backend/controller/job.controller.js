@@ -1,7 +1,6 @@
 // const ApplicationSchema = require('../modules/application.model.js');
-import { create } from 'domain';
 import Application  from '../modules/application.model.js';
-import  Job from '../modules/job.module.js';
+import  Job from '../modules/job.model.js';
 import mongoose from "mongoose";
 
 
@@ -25,8 +24,7 @@ export const postJob = async (req, res)=>{
             company:companyId,
             created_by:userid
         });
-        return res.status(200).json({message:"job application successful", suceess:true})
-        console.log("application successfull")
+        return res.status(201).json({message:"Job posted successfully", success:true, job})
     } catch (error) {
         console.log(error)
         return res
@@ -55,8 +53,7 @@ export const getAllJobs = async (req, res) => {
 
         // Handle no jobs found
         if (jobs.length === 0) {
-            return res.status(404).json({ message: "Jobs not found", success: false });
-            alert('job not available yet, come back later')
+            return res.status(200).json({ jobs: [], success: true });
         }
 
         // Success response
@@ -99,17 +96,9 @@ export const getJobById = async (req, res)=>{
 export const getAdminJobs = async (req, res)=>{
     try {
         const AdminId=req.id;
-        const jobs= await Job.find({created_by:AdminId}).populate({
-            path:'Company',
-            createAt:-1
-        });
-        if (!jobs){
-
-            return res.status(404).json({
-                message:jobs, 
-                success:false
-            })
-        }
+        const jobs= await Job.find({created_by:AdminId})
+            .populate({ path:'company' })
+            .sort({ createdAt:-1 });
         return res.status(200).json({jobs,
              success:true})
     } catch (error) {

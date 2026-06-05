@@ -1,7 +1,7 @@
 import catchAsync from './catchAsync.js';
 import AppError from './AppError.js';
-import { Application } from './models/application.model.js';
-import Job from './models/job.model.js';
+import Application from './modules/application.model.js';
+import Job from './modules/job.model.js';
 
 /**
  * Submit a bid/application for a job
@@ -37,7 +37,7 @@ export const applyJob = catchAsync(async (req, res, next) => {
   await job.save();
 
   res.status(201).json({ 
-    status: 'success', 
+    success: true, 
     message: "Application submitted successfully.", 
     application: newApplication 
   });
@@ -59,7 +59,7 @@ export const getAppliedJobs = catchAsync(async (req, res, next) => {
       }
     });
 
-  res.status(200).json({ status: 'success', applications });
+  res.status(200).json({ success: true, applications });
 });
 
 /**
@@ -82,7 +82,7 @@ export const getApplicants = catchAsync(async (req, res, next) => {
     return next(new AppError("Job not found.", 404));
   }
 
-  res.status(200).json({ status: 'success', job });
+  res.status(200).json({ success: true, job });
 });
 
 /**
@@ -104,5 +104,5 @@ export const updateStatus = catchAsync(async (req, res, next) => {
   application.status = status.toLowerCase();
   await application.save();
 
-  res.status(200).json({ status: 'success', message: "Status updated successfully." });
+  res.status(200).json({ success: true, message: "Status updated successfully." });
 });

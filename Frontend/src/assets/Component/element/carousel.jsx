@@ -20,7 +20,7 @@ const JobRoleCarousel = () => {
 
   const searchHandeler =(query)=>{
     dispatch(setSearchedQuery(query))
-    navigate('/Browse')
+    navigate('/browse')
 
   }
 

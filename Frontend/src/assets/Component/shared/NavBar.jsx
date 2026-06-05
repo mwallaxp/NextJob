@@ -56,8 +56,16 @@ const NavBar = () => {
   const getNavLinks = () => {
     if (user && user.role === 'recruiter') {
       return [
-        { to: "/", label: "Companies" },
-        { to: "/Admin/jobs", label: "Jobs" }
+        { to: "/admin", label: "Dashboard" },
+        { to: "/admin/companies", label: "Companies" },
+        { to: "/admin/jobs", label: "Jobs" }
+      ];
+    }
+    if (user && user.role === 'student') {
+      return [
+        { to: "/dashboard", label: "Dashboard" },
+        { to: "/jobs", label: "Jobs" },
+        { to: "/browse", label: "Browse" }
       ];
     }
     return [
@@ -171,7 +179,7 @@ const NavBar = () => {
                     <div className="py-2">
                       {user && user.role === "student" && (
                         <Link
-                          to="/Profile"
+                          to="/profile"
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 group"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 text-gray-500 group-hover:text-gray-600" viewBox="0 0 20 20" fill="currentColor">
@@ -279,7 +287,7 @@ const NavBar = () => {
               <div className="mt-3 space-y-1">
                 {user && user.role === "student" && (
                   <Link
-                    to="/Profile"
+                    to="/profile"
                     className="block px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-100"
                   >
                     View Profile

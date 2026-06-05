@@ -4,7 +4,6 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { JOB_API_END_POINT } from "../../../utils/constant";
-import NavBar from "../shared/NavBar";
 import {
   Loader2,
   Briefcase,
@@ -97,7 +96,6 @@ const PostJobs = () => {
   if (submitted) {
     return (
       <div>
-        <NavBar />
         <div className="flex flex-col items-center justify-center min-h-[70vh] p-8">
           <div className="bg-green-50 border-2 border-green-500 rounded-full p-4 mb-6 animate-bounce">
             <Check size={48} className="text-green-500" />
@@ -131,7 +129,6 @@ const PostJobs = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <NavBar />
       <div className="container mx-auto py-8">
         <div className="form-container">
           <h1 className="text-3xl font-bold text-center mb-2">Post a New Job</h1>
