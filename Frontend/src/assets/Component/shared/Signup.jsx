@@ -188,9 +188,9 @@ const Signup = () => {
 
   return (
     <>
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen">
         {/* Left section - Image and security messaging */}
-        <div className="hidden lg:flex lg:w-1/2 bg-blue-600 flex-col justify-center items-center text-white p-12">
+        <div className="hidden lg:flex lg:w-1/2 flex-col justify-center items-center p-12">
           <div className="max-w-md mx-auto">
             <Shield size={80} className="mb-8" />
             <h2 className="text-4xl font-bold mb-6">Create Your Secure Account</h2>
@@ -198,7 +198,7 @@ const Signup = () => {
               Join our platform with confidence. Your personal information is protected with the highest security standards,
               ensuring your data remains private and secure.
             </p>
-            <div className="bg-blue-700 p-6 rounded-lg">
+            <div className="p-6 rounded-lg">
               <h3 className="text-xl font-semibold mb-4">Account Benefits</h3>
               <ul className="space-y-3">
                 <li className="flex items-start">
@@ -227,22 +227,22 @@ const Signup = () => {
           <div className="w-full max-w-md">
             <form 
               onSubmit={handleSubmit}
-              className="bg-white shadow-xl rounded-xl p-8 border border-gray-200"
+              className="shadow-xl rounded-xl p-8 border"
             >
-              <h1 className="font-bold text-3xl mb-2 text-center text-gray-800">
+              <h1 className="font-bold text-3xl mb-2 text-center">
                 Create Account
               </h1>
-              <p className="text-gray-600 text-center mb-6">
+              <p className="text-center mb-6">
                 Please fill in your details to register
               </p>
 
               <div className="mb-4">
-                <label htmlFor="fullname" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="fullname" className="block text-sm font-medium mb-1">
                   Full Name
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User size={18} className="text-gray-400" />
+                    <User size={18} />
                   </div>
                   <input
                     type="text"
@@ -251,19 +251,19 @@ const Signup = () => {
                     placeholder="John Doe"
                     value={input.fullname}
                     onChange={handleChange}
-                    className={`pl-10 border ${errors.fullname ? 'border-red-500' : 'border-gray-300'} p-3 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                    className={`pl-10 border ${errors.fullname ? 'border-red-500' : ''} p-3 rounded-lg w-full focus:outline-none focus:ring-2`}
                   />
                 </div>
                 {errors.fullname && <p className="mt-1 text-sm text-red-500">{errors.fullname}</p>}
               </div>
 
               <div className="mb-4">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium mb-1">
                   Email Address
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail size={18} className="text-gray-400" />
+                    <Mail size={18} />
                   </div>
                   <input
                     type="email"
@@ -272,19 +272,19 @@ const Signup = () => {
                     placeholder="example@email.com"
                     value={input.email}
                     onChange={handleChange}
-                    className={`pl-10 border ${errors.email ? 'border-red-500' : 'border-gray-300'} p-3 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                    className={`pl-10 border ${errors.email ? 'border-red-500' : ''} p-3 rounded-lg w-full focus:outline-none focus:ring-2`}
                   />
                 </div>
                 {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
               </div>
 
               <div className="mb-4">
-                <label htmlFor="phonenumber" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="phonenumber" className="block text-sm font-medium mb-1">
                   Phone Number
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Phone size={18} className="text-gray-400" />
+                    <Phone size={18} />
                   </div>
                   <input
                     type="tel"
@@ -293,19 +293,19 @@ const Signup = () => {
                     placeholder="000-000-0000"
                     value={input.phonenumber}
                     onChange={handleChange}
-                    className={`pl-10 border ${errors.phonenumber ? 'border-red-500' : 'border-gray-300'} p-3 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                    className={`pl-10 border ${errors.phonenumber ? 'border-red-500' : ''} p-3 rounded-lg w-full focus:outline-none focus:ring-2`}
                   />
                 </div>
                 {errors.phonenumber && <p className="mt-1 text-sm text-red-500">{errors.phonenumber}</p>}
               </div>
 
               <div className="mb-4">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium mb-1">
                   Password
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock size={18} className="text-gray-400" />
+                    <Lock size={18} />
                   </div>
                   <input
                     type="password"
@@ -314,7 +314,7 @@ const Signup = () => {
                     placeholder="Create a strong password"
                     value={input.password}
                     onChange={handleChange}
-                    className={`pl-10 border ${errors.password ? 'border-red-500' : 'border-gray-300'} p-3 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                    className={`pl-10 border ${errors.password ? 'border-red-500' : ''} p-3 rounded-lg w-full focus:outline-none focus:ring-2`}
                   />
                 </div>
                 {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
@@ -323,7 +323,7 @@ const Signup = () => {
                 {input.password && (
                   <div className="mt-1">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-medium text-gray-700">Password strength:</span>
+                      <span className="text-xs font-medium">Password strength:</span>
                       <span className={`text-xs font-medium ${
                         passwordStrength.score < 2 ? 'text-red-500' : 
                         passwordStrength.score < 3 ? 'text-yellow-500' : 'text-green-500'
@@ -404,13 +404,13 @@ const Signup = () => {
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium mb-2">
                   Select Your Role
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <div 
-                    className={`flex items-center justify-center gap-2 p-3 cursor-pointer rounded-lg border ${
-                      input.role === "student" ? "bg-blue-50 border-blue-500 text-blue-700" : "border-gray-300 text-gray-600"
+                    className={`flex items-center justify-center gap-2 p-3 cursor-pointer rounded-lg ${
+                      input.role === "student" ? "border-2" : "border"
                     }`}
                     onClick={() => handleChange({ target: { name: "role", value: "student" } })}
                   >
@@ -427,8 +427,8 @@ const Signup = () => {
                     />
                   </div>
                   <div 
-                    className={`flex items-center justify-center gap-2 p-3 cursor-pointer rounded-lg border ${
-                      input.role === "recruiter" ? "bg-blue-50 border-blue-500 text-blue-700" : "border-gray-300 text-gray-600"
+                    className={`flex items-center justify-center gap-2 p-3 cursor-pointer rounded-lg ${
+                      input.role === "recruiter" ? "border-2" : "border"
                     }`}
                     onClick={() => handleChange({ target: { name: "role", value: "recruiter" } })}
                   >
@@ -451,7 +451,7 @@ const Signup = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium ${
                   loading ? "opacity-75 cursor-not-allowed" : ""
                 }`}
               >
@@ -468,9 +468,9 @@ const Signup = () => {
                 )}
               </button>
 
-              <p className="mt-6 text-center text-sm text-gray-600">
+              <p className="mt-6 text-center text-sm">
                 Already have an account?{" "}
-                <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
+                <Link to="/login" className="font-medium">
                   Log in
                 </Link>
               </p>

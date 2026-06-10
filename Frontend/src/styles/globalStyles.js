@@ -14,6 +14,30 @@ export const globalStyles = `
     overflow-x: hidden;
   }
 
+  :root {
+    --bg: ${theme.bg};
+    --text: ${theme.text};
+    --accent: ${theme.accent};
+    --card-bg: ${theme.card};
+    --border: ${theme.border};
+    --muted: ${theme.muted};
+  }
+
+  /* Override common Tailwind utilities to enforce dark theme colors */
+  .bg-white, .bg-gray-50, .bg-gray-100, .bg-gray-200 { background: var(--card-bg) !important; }
+  .bg-blue-600, .bg-blue-700, .bg-blue-500 { background: var(--accent) !important; }
+  .bg-blue-50 { background: var(--card-bg) !important; }
+
+  .text-white, .text-gray-800, .text-gray-700, .text-gray-600, .text-gray-500, .text-black-900, .text-black-700 { color: var(--text) !important; }
+  .text-gray-400, .text-gray-500 { color: var(--muted) !important; }
+
+  .border-gray-200, .border-gray-300, .border-black-100 { border-color: var(--border) !important; }
+
+  /* Buttons and links */
+  .hover\:bg-blue-700:hover, .hover\:bg-blue-600:hover, .hover\:bg-orange-600:hover, .hover\:bg-orange-700:hover { opacity: 0.95 !important; }
+  .hover\:text-blue-600:hover, .hover\:text-orange-600:hover { color: var(--accent) !important; }
+
+
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(24px); }
     to   { opacity: 1; transform: translateY(0); }
