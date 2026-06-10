@@ -1,9 +1,11 @@
 import Payment from "../modules/payment.model.js";
-import stripe from "stripe";
+import Stripe from "stripe";
 import catchAsync from "../catchAsync.js";
 import AppError from "../AppError.js";
 
-const stripeClient = stripe(process.env.STRIPE_SECRET_KEY);
+const stripeClient = process.env.STRIPE_SECRET_KEY
+    ? new Stripe(process.env.STRIPE_SECRET_KEY)
+    : null;
 
 // Create payment intent
 export const createPaymentIntent = catchAsync(async (req, res) => {
