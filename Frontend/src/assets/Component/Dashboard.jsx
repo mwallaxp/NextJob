@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import useGetAppliedJobs from "./Hooks/useGetAppliedJobs";
 import { Card, StatCard, ProgressBar, ButtonPrimary, Badge, EmptyState, SectionHeader } from "../../components/DesignSystem";
-import { BriefcaseOpen, TrendingUp, CheckCircle, Clock, AlertCircle, Zap, Target, User, Download, Share2 } from "lucide-react";
+import { Briefcase, TrendingUp, CheckCircle, Clock, AlertCircle, Zap, Target, User, Download, Share2 } from "lucide-react";
 
 const Dashboard = () => {
   const { user } = useSelector((store) => store.auth);
@@ -262,65 +262,6 @@ const Dashboard = () => {
           )}
         </div>
       </div>
-    </main>
-  );
-};
-
-export default Dashboard;
-          <p className="mt-2 text-sm text-slate-500">Complete more profile details to improve matching.</p>
-        </div>
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Recent activity</p>
-          <p className="mt-4 text-4xl font-bold text-slate-900">{latestApplications.length}</p>
-          <p className="mt-2 text-sm text-slate-500">Applications shown from your latest activity.</p>
-        </div>
-      </div>
-
-      <section className="mt-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-slate-900">Latest applications</h2>
-            <p className="mt-1 text-sm text-slate-500">Track your recent applications and status in one place.</p>
-          </div>
-          <Link
-            to="/jobs"
-            className="text-sm font-semibold text-blue-600 hover:text-blue-700"
-          >
-            View all jobs
-          </Link>
-        </div>
-
-        {latestApplications.length === 0 ? (
-          <div className="mt-8 rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-slate-500">
-            No applications yet. Start by browsing jobs that match your skills.
-          </div>
-        ) : (
-          <div className="mt-6 space-y-4">
-            {latestApplications.map((application, index) => {
-              const job = application?.job || application?.jobId || application;
-              const title = job?.title || application?.title || "Untitled role";
-              const company = job?.company?.name || application?.company?.name || "Unknown company";
-              const status = application?.status || "Pending";
-              return (
-                <div key={application._id || index} className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-500">{company}</p>
-                      <h3 className="text-lg font-bold text-slate-900">{title}</h3>
-                    </div>
-                    <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">
-                      {status}
-                    </span>
-                  </div>
-                  <div className="mt-3 text-sm text-slate-600">
-                    Applied on {new Date(application?.createdAt || application?.appliedAt || Date.now()).toLocaleDateString()}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
     </main>
   );
 };
