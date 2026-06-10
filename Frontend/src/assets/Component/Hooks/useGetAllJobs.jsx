@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import axios from "axios";
+import api from "../../../utils/api";
 import { setAllJobs } from "../../../redux/jobSlice";
 import { JOB_API_END_POINT } from "../../../utils/constant";
 
@@ -10,7 +10,7 @@ const useGetAllJobs = () => {
   useEffect(() => {
     const fetchAllJobs = async () => {
       try {
-        const res = await axios.get(`${JOB_API_END_POINT}/get`);
+        const res = await api.get(`${JOB_API_END_POINT}/get`);
 
         if (res.data.success) {
           dispatch(setAllJobs(res.data.jobs));

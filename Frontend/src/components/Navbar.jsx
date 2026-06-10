@@ -1,0 +1,163 @@
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { Menu, X, ChevronDown, LogOut, User, Settings, Bell } from 'lucide-react';
+import { setAuthUser } from '../../../redux/authSlice';
+
+const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const { user } = useSelector((store) => store.auth);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const handleLogout = () => {
+    dispatch(setAuthUser(null));
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
+
+  return (
+    <nav className="sticky top-0 z-50 bg-white border-b-2 border-black-100 shadow-soft">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center group-hover:shadow-medium transition-all">
+              <span className="text-white font-bold text-lg">NJ</span>
+            </div>
+            <span className="text-xl font-bold text-black-900 hidden sm:inline">NextJob</span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-8">
+            {user ? (
+              <>
+                <Link to="/browse" className="text-black-700 hover:text-orange-600 font-semibold transition">
+                  Browse Jobs
+                </Link>
+                <Link to="/saved" className="text-black-700 hover:text-orange-600 font-semibold transition">
+                  Saved
+                </Link>
+                <Link to="/dashboard" className="text-black-700 hover:text-orange-600 font-semibold transition">
+                  Dashboard
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link to="/browse" className="text-black-700 hover:text-orange-600 font-semibold transition">
+                  Browse
+                </Link>
+                <Link to="/login" className="text-black-700 hover:text-orange-600 font-semibold transition">
+                  For Clients
+                </Link>
+              </>
+            )}
+          </div>
+
+          {/* Right Side */}
+          <div className="flex items-center gap-4">
+            {user && (
+              <button className="relative p-2 text-black-700 hover:text-orange-600 transition">
+                <Bell size={24} />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-orange-500 rounded-full"></span>
+              </button>
+            )}
+
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-black-50 transition"
+                >
+                  <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                    {user.fullname?.charAt(0) || 'U'}
+                  </div>
+                  <ChevronDown size={18} className={`transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white border-2 border-black-100 rounded-xl shadow-lg">
+                    <Link
+                      to="/profile"
+                      className="flex items-center gap-2 px-4 py-3 text-black-900 hover:bg-orange-50 transition border-b border-black-100"
+                    >
+                      <User size={18} />
+                      My Profile
+                    </Link>
+                    <Link
+                      to="/settings"
+                      className="flex items-center gap-2 px-4 py-3 text-black-900 hover:bg-orange-50 transition"
+                    >
+                      <Settings size={18} />
+                      Settings
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2 px-4 py-3 text-red-600 hover:bg-red-50 transition border-t border-black-100"
+                    >
+                      <LogOut size={18} />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Link
+                  to="/login"
+                  className="hidden sm:inline-block px-4 py-2 text-orange-600 font-semibold hover:text-orange-700 transition"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/signup"
+                  className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
+
+            {/* Mobile Menu Button */}
+            <button
+              className="md:hidden p-2 text-black-900 hover:bg-black-100 rounded-lg transition"
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              {isOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Navigation */}
+        {isOpen && (
+          <div className="md:hidden pb-4 border-t-2 border-black-100">
+            <Link to="/browse" className="block px-4 py-2 text-black-900 hover:bg-orange-50 rounded transition">
+              Browse Jobs
+            </Link>
+            {user && (
+              <>
+                <Link to="/saved" className="block px-4 py-2 text-black-900 hover:bg-orange-50 rounded transition">
+                  Saved Jobs
+                </Link>
+                <Link to="/dashboard" className="block px-4 py-2 text-black-900 hover:bg-orange-50 rounded transition">
+                  Dashboard
+                </Link>
+                <Link to="/profile" className="block px-4 py-2 text-black-900 hover:bg-orange-50 rounded transition">
+                  Profile
+                </Link>
+              </>
+            )}
+            {!user && (
+              <Link to="/login" className="block px-4 py-2 text-black-900 hover:bg-orange-50 rounded transition">
+                Login
+              </Link>
+            )}
+          </div>
+        )}
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;

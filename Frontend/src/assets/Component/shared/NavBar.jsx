@@ -4,7 +4,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Bell } from "lucide-react";
 import { USER_API_END_POINT } from "../../../utils/constant";
 import { setUser } from "../../../redux/authSlice";
-import axios from "axios";
+import api from "../../../utils/api";
 import { toast } from 'react-toastify';
 
 const NavBar = () => {
@@ -36,7 +36,7 @@ const NavBar = () => {
 
   const logoutHandler = async () => {
     try {
-      const res = await axios.get(`${USER_API_END_POINT}/logout`);
+      const res = await api.get(`${USER_API_END_POINT}/logout`);
       
       if (res.data.success) {
         dispatch(setUser(null));

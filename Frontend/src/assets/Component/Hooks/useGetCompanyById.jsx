@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "../../../utils/api";
 import React, { useEffect } from "react";
 import { COMPANY_API_END_POINT } from "../../../utils/constant";
 import { useDispatch } from "react-redux";
@@ -11,7 +11,7 @@ export const useGetCompanyById = (ComapanyId) => {
   useEffect(() => {
     const fetchSingleCompany = async () => {
       try {
-        const res = await axios.get(
+        const res = await api.get(
           `${COMPANY_API_END_POINT}/get/${ComapanyId}`
         );
         console.log(res.data.company);

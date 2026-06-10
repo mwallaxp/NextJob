@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { setSingleJob } from "../../redux/jobSlice";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
+import api from "../../utils/api";
 import {
   APPLICATION_API_END_POINT,
   JOB_API_END_POINT,
@@ -35,7 +35,7 @@ export const JobDescription = () => {
 
     setApplying(true);
     try {
-      const res = await axios.post(`${APPLICATION_API_END_POINT}/apply/${jobId}`, {});
+      const res = await api.post(`${APPLICATION_API_END_POINT}/apply/${jobId}`, {});
       
       if (res.data.success) {
         setHasApplied(true);
@@ -67,7 +67,7 @@ export const JobDescription = () => {
       }
 
       try {
-        const res = await axios.get(`${JOB_API_END_POINT}/get/${jobId}`);
+        const res = await api.get(`${JOB_API_END_POINT}/get/${jobId}`);
         
         if (res.data.success && res.data.job) {
           dispatch(setSingleJob(res.data.job));

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
+import api from "../../../utils/api";
 import { setLoading } from "../../../redux/authSlice";
 import { toast } from 'react-toastify';
 import { USER_API_END_POINT } from "../../../utils/constant";
@@ -167,7 +167,7 @@ const Signup = () => {
       formData.append('file', input.file);
     }
 
-    await axios.post(
+    await api.post(
       `${USER_API_END_POINT}/registration`,
       formData
     );
