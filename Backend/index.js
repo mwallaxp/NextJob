@@ -24,10 +24,25 @@ dotenv.config({})
 
 const app = express();
 const server = http.createServer(app);
+
+// Build allowed origins list from env var (comma separated) or single CLIENT_URL
+const rawClientUrls = process.env.CLIENT_URLS || process.env.CLIENT_URL || "https://next-job-vubs.vercel.app";
+const allowedOrigins = Array.isArray(rawClientUrls)
+  ? rawClientUrls
+  : rawClientUrls.split(',').map((u) => u.trim()).filter(Boolean);
+
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "https://next-job-vubs.vercel.app",
-    credentials: true
+    origin: (origin, callback) => {
+      // Allow requests with no origin like mobile apps or curl
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        return callback(null, true);
+      }
+      const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
+      return callback(new Error(msg), false);
+    },
+    credentials: true,
   }
 });
 
@@ -41,11 +56,26 @@ app.use(bodyParser.json())
 app.use(cookieParser());
 
 const corsOptions = {
-  origin: process.env.CLIENT_URL || "https://next-job-vubs.vercel.app",
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: (origin, callback) => {
+    // Allow non-browser requests
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'), false);
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"],
 };
+
+app.use((req, res, next) => {
+  // For successful preflight responses when origin is allowed, echo it back
+  const origin = req.headers.origin;
+  if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    res.header('Access-Control-Allow-Origin', origin || '*');
+    res.header('Access-Control-Allow-Credentials', 'true');
+  }
+  return next();
+});
 
 app.use(cors(corsOptions));
 
