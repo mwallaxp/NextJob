@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const frontendJobSchema = z.object({
   title: z.string({ required_error: "Job title is required" }).min(3, "Title must be at least 3 characters").max(100, "Title cannot exceed 100 characters"),
   description: z.string({ required_error: "Job description is required" }).min(20, "Description must be at least 20 characters"),
-  requirements: z.array(z.string()).min(1, "At least one requirement is required"),
+  requirements: z.array(z.string()).min(1, "At least one requirement is required"), // Requirements as array
   salary: z.coerce.number({ 
     required_error: "Salary is required",
     invalid_type_error: "Salary must be a number" 

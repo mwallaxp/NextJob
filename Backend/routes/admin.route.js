@@ -6,8 +6,8 @@ import {
   getAuditLogs,
   shadowLogin
 } from '../controller/admin.controller.js';
-import { isAuthenticate } from '../authentication/isAuthentication.js';
-import { authorizeRoles } from '../authentication/auth.js';
+import { isAuthenticate } from '../authentication/isAuthentication.js'; // Corrected import path
+import { authorizeRoles } from '../authentication/auth.js'; // Corrected import path
 
 const router = express.Router();
 

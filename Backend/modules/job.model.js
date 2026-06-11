@@ -18,7 +18,7 @@ const jobSchema = new mongoose.Schema({
         required: true
     },
     experience: {
-        type: Number, // Changed to Number to match schema
+        type: Number,
         required: true
     },
     currency: {

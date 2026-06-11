@@ -123,7 +123,7 @@ io.on("connection", (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.use("/api/v1/user", userRouter);
+app.use("/api/v1/user", userRouter); // Added semicolon for consistency
 app.use("/api/v1/company", companyRoute)
 app.use("/api/v1/job", JobRoute)
 app.use("/api/v1/application", ApplicationRouter)

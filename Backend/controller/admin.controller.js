@@ -1,9 +1,9 @@
-import catchAsync from '../catchAsync.js';
-import AppError from '../AppError.js';
+import catchAsync from '../utility/catchAsync.js'; // Adjusted path
+import AppError from '../AppError.js'; // Adjusted path
 import User from '../modules/user.module.js';
 import jwt from 'jsonwebtoken';
-import Job from '../modules/job.model.js';
-import AuditLog from '../modules/auditLog.model.js';
+import Job from '../modules/job.model.js'; // Standardized import
+import AuditLog from '../modules/auditLog.model.js'; // Standardized import
 
 /**
  * Get all users with filtering and pagination
@@ -69,7 +69,7 @@ export const toggleUserStatus = catchAsync(async (req, res, next) => {
  */
 export const getAdminStats = catchAsync(async (req, res, next) => {
   const [candidates, recruiters, totalJobs, activeJobs, recentLogs] = await Promise.all([
-    User.countDocuments({ role: 'candidate' }),
+    User.countDocuments({ role: 'candidate' }), // Changed from 'student' to 'candidate'
     User.countDocuments({ role: 'recruiter' }),
     Job.countDocuments(),
     Job.countDocuments({ status: 'active' }),

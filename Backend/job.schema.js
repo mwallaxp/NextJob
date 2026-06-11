@@ -7,7 +7,7 @@ export const createJobSchema = z.object({
   body: z.object({
     title: z.string({ required_error: "Job title is required" }).min(3).max(100),
     description: z.string({ required_error: "Job description is required" }).min(20),
-    requirements: z.array(z.string()).min(1, "At least one requirement is required"),
+    requirements: z.array(z.string()).min(1, "At least one requirement is required"), // Ensure requirements is an array
     salary: z.coerce.number({ 
       required_error: "Salary is required",
       invalid_type_error: "Salary must be a number" 

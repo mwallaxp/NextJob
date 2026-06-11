@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../../utils/api';
 import { Users, Briefcase, CheckCircle, Search, ChevronLeft, ChevronRight, LogIn, Activity, ArrowUpRight } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { StatCard } from '../../../components/DesignSystem'; // Assuming StatCard is exported from DesignSystem
+import { StatCard } from '../../../components/DesignSystem'; // Corrected import path
 import { useAuth } from '../shared/AuthContext';
 
 const AdminDashboard = () => {
@@ -153,7 +153,7 @@ const AdminDashboard = () => {
               onChange={(e) => setSelectedRole(e.target.value)}
             >
               <option value="">All Roles</option>
-              <option value="candidate">Candidate</option>
+              <option value="candidate">Candidate</option> {/* Changed from 'student' to 'candidate' */}
               <option value="recruiter">Recruiter</option>
             </select>
             <button

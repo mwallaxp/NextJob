@@ -11,7 +11,7 @@ const MultiStepJobForm = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    requirements: '',
+    requirements: [], // Initialize requirements as an empty array
     salary: '',
     location: '',
     jobType: '',
@@ -43,7 +43,7 @@ const MultiStepJobForm = () => {
       // Reset form or redirect
       setFormData({
         title: '', description: '', requirements: '', salary: '',
-        location: '', jobType: '', experienceLevel: '', position: '',
+        location: '', jobType: '', experienceLevel: '', position: '', requirements: [],
         companyId: '',
         skills: [],
         currency: 'USD',

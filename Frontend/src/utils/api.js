@@ -1,10 +1,12 @@
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 // Centralized API URL
 const API_URL = import.meta.env.VITE_API_URL || 'https://nextjob-sw2d.onrender.com';
 
 const api = axios.create({
   baseURL: API_URL,
+  timeout: 30000, // Global timeout set to 30 seconds
   withCredentials: true, // Automatically send cookies with every request
   headers: {
     'Content-Type': 'application/json',
@@ -44,6 +46,14 @@ api.interceptors.response.use(
       }
     }
     
+    // Handle Request Timeout specifically
+    if (error.code === 'ECONNABORTED' && error.message.includes('timeout')) {
+      toast.error('Request Timed Out. Please check your internet connection.');
+    } else if (!error.response) {
+      // Handle cases where the server is down or the user is offline
+      toast.error('Network Error: Unable to connect to the server. Please check your connection.');
+    }
+
     // Always return a rejected promise to allow local catch blocks to execute if needed
     return Promise.reject(error);
   }

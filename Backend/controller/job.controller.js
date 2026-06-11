@@ -1,16 +1,16 @@
-// const ApplicationSchema = require('../modules/application.model.js');
-import Application  from '../modules/application.model.js';
-import  Job from '../modules/job.model.js';
+import Application from '../modules/application.model.js';
+import Job from '../modules/job.model.js';
 import mongoose from "mongoose";
+import catchAsync from '../utility/catchAsync.js'; // Added import for catchAsync
+import AppError from '../AppError.js'; // Added import for AppError
 
 
-export const postJob = async (req, res)=>{
+export const postJob = catchAsync(async (req, res, next) => { // Wrapped in catchAsync
     try {
         const {title, description, requirements, salary, location, jobType, experienceLevel, position, companyId, currency, skills }=req.body
         const userid=req.id
         if(!title|| !description|| !requirements|| !salary|| !location|| !jobType||!experienceLevel|| !position|| !companyId|| !currency || !skills){
-            return res.status(400).json({ message: "Complete the missing field", success: false });
-
+            return next(new AppError("Complete the missing field", 400)); // Using AppError
         };
         const job = await Job.create( {
             title,
@@ -21,18 +21,15 @@ export const postJob = async (req, res)=>{
             jobType,
             experience:experienceLevel, // Use experienceLevel from body for the 'experience' model field
             position, 
-            company:companyId,
-            created_by:userid
+            company: companyId,
+            created_by: userid,
             currency, // Add currency
             skills, // Add skills
         });
         return res.status(201).json({message:"Job posted successfully", success:true, job})
     } catch (error) {
         console.log(error)
-        return res
-        .status(500)
-        .json({ message: "Internal server error", success: false });
-        
+        return next(new AppError("Internal server error", 500)); // Using AppError
     }
 
 }
