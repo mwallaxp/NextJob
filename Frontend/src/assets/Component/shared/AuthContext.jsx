@@ -10,11 +10,13 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.auth.user);
+  const loading = useSelector((state) => state.auth.loading);
   const [error, setError] = useState(null);
 
   // Register a new user
   const register = async (userData, profilePhoto) => {
     setError(null);
+    dispatch(setReduxLoading(true));
     try {
       // Create form data for file upload
       const formData = new FormData();
@@ -51,12 +53,15 @@ export const AuthProvider = ({ children }) => {
       const errorMessage = err.response?.data?.message || 'Registration failed';
       setError(errorMessage);
       return { success: false, message: errorMessage };
+    } finally {
+      dispatch(setReduxLoading(false));
     }
   };
 
   // Login user
   const login = async (email, password, role) => {
     setError(null);
+    dispatch(setReduxLoading(true));
     try {
       const response = await api.post(`${USER_API_END_POINT}/login`, {
         email,
@@ -80,6 +85,8 @@ export const AuthProvider = ({ children }) => {
       const errorMessage = err.response?.data?.message || 'Login failed';
       setError(errorMessage);
       return { success: false, message: errorMessage };
+    } finally {
+      dispatch(setReduxLoading(false));
     }
   };
 
@@ -101,6 +108,7 @@ export const AuthProvider = ({ children }) => {
   // Update user profile
   const updateProfile = async (profileData, resume) => {
     setError(null);
+    dispatch(setReduxLoading(true));
     try {
       // Create form data for file upload
       const formData = new FormData();
@@ -133,12 +141,15 @@ export const AuthProvider = ({ children }) => {
       const errorMessage = err.response?.data?.message || 'Profile update failed';
       setError(errorMessage);
       return { success: false, message: errorMessage };
+    } finally {
+      dispatch(setReduxLoading(false));
     }
   };
 
   // Admin shadow login as another user
   const shadowLogin = async (userId) => {
     setError(null);
+    dispatch(setReduxLoading(true));
     try {
       // Store the current admin token before switching
       const adminToken = localStorage.getItem('token');
@@ -166,6 +177,8 @@ export const AuthProvider = ({ children }) => {
         // Optionally re-fetch admin user data here
       }
       return { success: false, message: errorMessage };
+    } finally {
+      dispatch(setReduxLoading(false));
     }
   };
 
@@ -173,6 +186,7 @@ export const AuthProvider = ({ children }) => {
   const exitShadowMode = async () => {
     const originalAdminToken = sessionStorage.getItem('adminOriginalToken');
     localStorage.setItem('token', originalAdminToken);
+    dispatch(setReduxLoading(true));
     sessionStorage.removeItem('adminOriginalToken');
     
     // Re-fetch the actual admin data to sync Redux
@@ -184,6 +198,8 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error("Failed to restore admin profile", err);
       dispatch(setUser(null));
+    } finally {
+      dispatch(setReduxLoading(false));
     }
   };
 
