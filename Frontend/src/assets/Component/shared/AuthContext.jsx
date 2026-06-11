@@ -109,6 +109,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await api.get(`${USER_API_END_POINT}/logout`);
       localStorage.removeItem('token');
+      sessionStorage.removeItem('adminOriginalToken'); // Ensure shadow token is cleared on logout
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
@@ -156,6 +157,47 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Admin shadow login as another user
+  const shadowLogin = async (userId) => {
+    setError(null);
+    try {
+      // Store the current admin token before switching
+      const adminToken = localStorage.getItem('token');
+      if (adminToken) {
+        sessionStorage.setItem('adminOriginalToken', adminToken);
+      }
+
+      const response = await api.post(`/api/v1/admin/shadow-login/${userId}`);
+      if (response.data.success) {
+        localStorage.setItem('token', response.data.token);
+        setCurrentUser(response.data.user); // Update with shadow user's data
+        return { success: true };
+      } else {
+        setError(response.data.message);
+        return { success: false, message: response.data.message };
+      }
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || 'Shadow login failed';
+      setError(errorMessage);
+      // Revert token if shadow login fails
+      const originalToken = sessionStorage.getItem('adminOriginalToken');
+      if (originalToken) {
+        localStorage.setItem('token', originalToken);
+        sessionStorage.removeItem('adminOriginalToken');
+        // Optionally re-fetch admin user data here
+      }
+      return { success: false, message: errorMessage };
+    }
+  };
+
+  // Exit shadow mode and revert to admin session
+  const exitShadowMode = async () => {
+    const originalAdminToken = sessionStorage.getItem('adminOriginalToken');
+    localStorage.setItem('token', originalAdminToken);
+    sessionStorage.removeItem('adminOriginalToken');
+    await initAuth(); // Re-initialize auth to fetch admin's user data
+  };
+
   // Context value
   const value = {
     currentUser,
@@ -165,6 +207,8 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     updateProfile,
+    shadowLogin,
+    exitShadowMode,
     isAuthenticated: !!currentUser,
   };
 

@@ -2,7 +2,6 @@ import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 import bodyParser from "body-parser";
-import cors from "cors";
 import dotenv from "dotenv";
 import rateLimit from "express-rate-limit";
 import http from "http";
@@ -13,11 +12,13 @@ import companyRoute from "./routes/company.router.js";
 import JobRoute from "./routes/job.route.js"
 import ApplicationRouter from "./routes/application.route.js";
 import paymentRouter from "./routes/payment.route.js";
+import adminRouter from "./routes/admin.route.js";
 import messageRouter from "./routes/message.route.js";
 import reviewRouter from "./routes/review.route.js";
 import portfolioRouter from "./routes/portfolio.route.js";
 import verificationRouter from "./routes/verification.route.js";
 import disputeRouter from "./routes/dispute.route.js";
+import cors from "cors";
 import cookieParser from "cookie-parser";
 import globalErrorHandler from "./error.js";
 
@@ -59,8 +60,6 @@ app.use("/api", limiter); // Apply rate limiting to all API routes
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
-app.use(express.json())
-app.use(bodyParser.urlencoded({extended:true}))
 app.use(bodyParser.json())
 app.use(cookieParser());
 
@@ -75,16 +74,6 @@ const corsOptions = {
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"],
 };
-
-app.use((req, res, next) => {
-  // For successful preflight responses when origin is allowed, echo it back
-  const origin = req.headers.origin;
-  if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-    res.header('Access-Control-Allow-Origin', origin || '*');
-    res.header('Access-Control-Allow-Credentials', 'true');
-  }
-  return next();
-});
 
 app.use(cors(corsOptions));
 
@@ -139,6 +128,7 @@ app.use("/api/v1/company", companyRoute)
 app.use("/api/v1/job", JobRoute)
 app.use("/api/v1/application", ApplicationRouter)
 app.use("/api/v1/payment", paymentRouter)
+app.use("/api/v1/admin", adminRouter)
 app.use("/api/v1/messages", messageRouter)
 app.use("/api/v1/reviews", reviewRouter)
 app.use("/api/v1/portfolio", portfolioRouter)
@@ -147,9 +137,13 @@ app.use("/api/v1/disputes", disputeRouter)
 
 app.use(globalErrorHandler);
 
-server.listen(PORT, ()=>{
-    connectDB()
-    console.log(`Server listening on port ${PORT}`)
+server.listen(PORT, async () => {
+    try {
+        await connectDB();
+        console.log(`Server listening on port ${PORT}`);
+    } catch (err) {
+        console.error("Failed to connect to DB on startup:", err);
+    }
 });
 
 export default app;

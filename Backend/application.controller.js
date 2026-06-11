@@ -5,6 +5,23 @@ import Job from './modules/job.model.js';
 import mongoose from 'mongoose';
 
 /**
+ * Helper function to calculate skill match percentage
+ */
+const calculateMatchScore = (jobSkills, userSkills) => {
+  if (!jobSkills || jobSkills.length === 0) return 0;
+  if (!userSkills || userSkills.length === 0) return 0;
+
+  const normalizedJobSkills = jobSkills.map(s => s.toLowerCase().trim());
+  const normalizedUserSkills = userSkills.map(s => s.toLowerCase().trim());
+
+  const matches = normalizedJobSkills.filter(skill => 
+    normalizedUserSkills.includes(skill)
+  );
+
+  return Math.round((matches.length / jobSkills.length) * 100);
+};
+
+/**
  * Submit a bid/application for a job
  */
 export const applyJob = catchAsync(async (req, res, next) => {
@@ -92,7 +109,21 @@ export const getApplicants = catchAsync(async (req, res, next) => {
     return next(new AppError("Job not found.", 404));
   }
 
-  res.status(200).json({ success: true, job });
+  // Convert to lean objects so we can add the virtual matchScore field
+  const jobObj = job.toObject();
+  
+  const jobSkills = jobObj.skills || [];
+
+  // Calculate match score for each applicant
+  jobObj.applications = jobObj.applications.map(app => {
+    const userSkills = app.applicant?.profile?.skills || [];
+    return {
+      ...app,
+      matchScore: calculateMatchScore(jobSkills, userSkills)
+    };
+  });
+
+  res.status(200).json({ success: true, job: jobObj });
 });
 
 /**

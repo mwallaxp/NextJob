@@ -15,6 +15,9 @@ export const postJob = catchAsync(async (req, res, next) => {
     logoUrl = cloudResponse.secure_url;
   }
 
+  // Ensure skills is an array if passed as a string
+  const processedSkills = Array.isArray(skills) ? skills : (skills ? skills.split(",").map(s => s.trim()) : []);
+
   const job = await Job.create({
     title,
     description,
@@ -22,7 +25,7 @@ export const postJob = catchAsync(async (req, res, next) => {
     salary: Number(salary),
     location,
     jobType,
-    skills,
+    skills: processedSkills,
     experience: experienceLevel,
     position,
     company: companyId,
@@ -37,7 +40,7 @@ export const postJob = catchAsync(async (req, res, next) => {
  * Get all jobs with optional keyword filtering
  */
 export const getAllJobs = catchAsync(async (req, res, next) => {
-  const { keyword, jobType, experienceLevel, location, minSalary, sort, page, limit } = req.query;
+  const { keyword, jobType, experienceLevel, location, minSalary, sort, page, limit, companyId } = req.query;
   
   // Pagination setup
   const pageNum = Number(page) || 1;
@@ -57,6 +60,7 @@ export const getAllJobs = catchAsync(async (req, res, next) => {
   if (location) query.location = { $regex: location, $options: "i" };
   if (experienceLevel) query.experience = { $gte: Number(experienceLevel) };
   if (minSalary) query.salary = { $gte: Number(minSalary) };
+  if (companyId) query.company = companyId;
 
   // Sorting setup (default to newest)
   let sortBy = { createdAt: -1 };

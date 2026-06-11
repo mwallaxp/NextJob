@@ -35,10 +35,11 @@ const CompanyPage = () => {
     const fetchJobs = async () => {
       try {
         const res = await axios.get(`${JOB_API_END_POINT}/get`, {
+          params: { companyId: id },
           withCredentials: true,
         });
         if (res.data.success) {
-          setJobs(res.data.jobs.filter((job) => job?.company?._id === id || job?.company?.id === id));
+          setJobs(res.data.jobs);
         }
       } catch (error) {
         console.error("Error fetching jobs for company:", error);

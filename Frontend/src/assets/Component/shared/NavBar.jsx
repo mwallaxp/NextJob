@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Bell } from "lucide-react";
 import { USER_API_END_POINT } from "../../../utils/constant";
 import { setUser } from "../../../redux/authSlice";
-import api from "../../../utils/api";
+import api from "../../../utils/api"; // Ensure api is imported
+import { useAuth } from "./AuthContext";
 import { toast } from 'react-toastify';
 
 const NavBar = () => {
@@ -13,6 +14,7 @@ const NavBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
+  const { logout, exitShadowMode } = useAuth(); // Import both from AuthContext
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -34,15 +36,22 @@ const NavBar = () => {
     setIsMobileMenuOpen(false);
   }, [location]);
 
+  const isShadowMode = sessionStorage.getItem('adminOriginalToken') !== null;
+
   const logoutHandler = async () => {
     try {
-      const res = await api.get(`${USER_API_END_POINT}/logout`);
-      
-      if (res.data.success) {
-        localStorage.removeItem("token");
+      if (isShadowMode) {
+        await exitShadowMode();
+        dispatch(setUser(null)); // Clear Redux to trigger re-fetch of admin profile
+        toast.info("Exited shadow mode.");
+        navigate("/admin");
+      } else {
+        // Use the context logout which handles localStorage, sessionStorage, and Context state
+        await logout();
+        // Additionally clear Redux state
         dispatch(setUser(null));
         toast.success("LogOut successful!");
-      navigate("/"); 
+        navigate("/"); 
       }
     } catch (error) {
       console.error("Logout failed:", error);
@@ -63,7 +72,7 @@ const NavBar = () => {
         { to: "/admin/jobs", label: "Jobs" }
       ];
     }
-    if (user && user.role === 'candidate') {
+    if (user && user.role === 'student') {
       return [
         { to: "/dashboard", label: "Dashboard" },
         { to: "/jobs", label: "Jobs" },
@@ -74,7 +83,9 @@ const NavBar = () => {
     return [
       { to: "/", label: "Home" },
       { to: "/jobs", label: "Jobs" },
-      { to: "/browse", label: "Browse" }
+      { to: "/browse", label: "Browse" },
+      { to: "/about", label: "About" },
+      { to: "/support", label: "Support" }
     ];
   };
 
@@ -181,7 +192,7 @@ const NavBar = () => {
                     </div>
                     
                     <div className="py-2">
-                      {user && user.role === "candidate" && (
+                      {user && user.role === "student" && (
                         <Link
                           to="/profile"
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 group"
@@ -193,6 +204,18 @@ const NavBar = () => {
                         </Link>
                       )}
                       
+                      {isShadowMode && (
+                        <button
+                          onClick={logoutHandler} // This will now call exitShadowMode
+                          className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 group"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 text-red-500 group-hover:text-red-600" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.586 2.586a1 1 0 001.414-1.414L11 9.586V6z" clipRule="evenodd" />
+                          </svg>
+                          Exit Shadow Mode
+                        </button>
+                      )}
+
                       <button
                         onClick={logoutHandler}
                         className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 group"
@@ -289,7 +312,7 @@ const NavBar = () => {
               </div>
               
               <div className="mt-3 space-y-1">
-                {user && user.role === "candidate" && (
+                {user && user.role === "student" && (
                   <Link
                     to="/profile"
                     className="block px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-100"
@@ -297,6 +320,18 @@ const NavBar = () => {
                     View Profile
                   </Link>
                 )}
+                {isShadowMode && (
+                  <button
+                    onClick={logoutHandler} // This will now call exitShadowMode
+                    className="w-full text-left block px-4 py-2 text-base font-medium text-red-600 hover:bg-red-50"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 1 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Exit Shadow Mode
+                  </button>
+                )}
+
                 <button
                   onClick={logoutHandler}
                   className="w-full text-left block px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-100"

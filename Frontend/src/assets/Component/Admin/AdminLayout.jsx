@@ -5,6 +5,7 @@ const adminLinks = [
   { to: "/admin/companies", label: "Companies" },
   { to: "/admin/jobs", label: "Job postings" },
   { to: "/admin/jobs/create", label: "Post job" },
+  { to: "/admin/logs", label: "Audit Logs" },
 ];
 
 const AdminLayout = () => {

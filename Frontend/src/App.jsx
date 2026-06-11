@@ -9,6 +9,9 @@ import Browse from "./assets/Component/Browse.jsx";
 import Profile from "./assets/Component/Profile.jsx";
 import Dashboard from "./assets/Component/Dashboard.jsx";
 import SavedJobs from "./assets/Component/SavedJobs.jsx";
+import AboutUs from "./assets/Component/AboutUs.jsx";
+import Resources from "./assets/Component/Resources.jsx";
+import Support from "./assets/Component/Support.jsx";
 import Notifications from "./assets/Component/Notifications.jsx";
 import CompanyPage from "./assets/Component/CompanyPage.jsx";
 import JobDescription from "./assets/Component/JobDescription.jsx";
@@ -18,6 +21,7 @@ import CompanySetUp from "./assets/Component/Admin/CompanySetUp.jsx";
 import AdminJobs from "./assets/Component/Admin/AdminJobs.jsx";
 import Applicants from "./assets/Component/Admin/Applicants.jsx";
 import PostJobs from "./assets/Component/Admin/PostJobs.jsx";
+import AuditLogs from "./assets/Component/Admin/AuditLogs.jsx";
 import AdminDashboard from "./assets/Component/Admin/AdminDashboard.jsx";
 import ProtectedRoute from "./assets/Component/Admin/ProtectRoute.jsx";
 import AdminLayout from "./assets/Component/Admin/AdminLayout.jsx";
@@ -48,6 +52,18 @@ const appRouter = createBrowserRouter([
       {
         path: "signup",
         element: <Signup />,
+      },
+      {
+        path: "about",
+        element: <AboutUs />,
+      },
+      {
+        path: "resources",
+        element: <Resources />,
+      },
+      {
+        path: "support",
+        element: <Support />,
       },
       {
         path: "description/:id",
@@ -112,6 +128,10 @@ const appRouter = createBrowserRouter([
           {
             path: "jobs/:id/applicants",
             element: <Applicants />,
+          },
+          {
+            path: "logs",
+            element: <AuditLogs />,
           },
         ],
       },
