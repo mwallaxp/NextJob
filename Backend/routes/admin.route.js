@@ -6,12 +6,13 @@ import {
   getAuditLogs,
   shadowLogin
 } from '../controller/admin.controller.js';
-import { isAuthenticated, authorizeRoles } from '../middleware/auth.js'; // Assuming these middlewares exist
+import { isAuthenticate } from '../authentication/isAuthentication.js';
+import { authorizeRoles } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // All admin routes should be protected and only accessible by admins
-router.use(isAuthenticated, authorizeRoles('admin'));
+router.use(isAuthenticate, authorizeRoles('admin'));
 
 router.get('/stats', getAdminStats);
 router.get('/users', getAllUsers);
