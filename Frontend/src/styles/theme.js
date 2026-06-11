@@ -1,10 +1,13 @@
 export const theme = {
-  bg: '#000',
-  text: '#333',
-  accent: '#2a2a2a',
-  card: '#161616',
-  border: '#2a2a2a',
-  muted: '#1a1a1a',
+  bg: '#fffaf5',
+  text: '#241611',
+  accent: '#f97316',
+  accentHover: '#ea580c',
+  complement: '#0f766e',
+  complementHover: '#115e59',
+  card: '#ffffff',
+  border: '#fed7aa',
+  muted: '#6b5d55',
 };
 
 export default theme;

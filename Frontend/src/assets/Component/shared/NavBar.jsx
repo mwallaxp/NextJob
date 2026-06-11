@@ -63,7 +63,7 @@ const NavBar = () => {
         { to: "/admin/jobs", label: "Jobs" }
       ];
     }
-    if (user && user.role === 'student') {
+    if (user && user.role === 'candidate') {
       return [
         { to: "/dashboard", label: "Dashboard" },
         { to: "/jobs", label: "Jobs" },
@@ -181,7 +181,7 @@ const NavBar = () => {
                     </div>
                     
                     <div className="py-2">
-                      {user && user.role === "student" && (
+                      {user && user.role === "candidate" && (
                         <Link
                           to="/profile"
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 group"
@@ -289,7 +289,7 @@ const NavBar = () => {
               </div>
               
               <div className="mt-3 space-y-1">
-                {user && user.role === "student" && (
+                {user && user.role === "candidate" && (
                   <Link
                     to="/profile"
                     className="block px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-100"

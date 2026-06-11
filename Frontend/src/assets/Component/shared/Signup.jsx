@@ -14,7 +14,7 @@ const Signup = () => {
     phonenumber: "",
     password: "",
     confirmPassword: "",
-    role: "student", // Default role
+    role: "candidate",
     file: null,
   });
 
@@ -410,18 +410,18 @@ const Signup = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div 
                     className={`flex items-center justify-center gap-2 p-3 cursor-pointer rounded-lg ${
-                      input.role === "student" ? "border-2" : "border"
+                      input.role === "candidate" ? "border-2" : "border"
                     }`}
-                    onClick={() => handleChange({ target: { name: "role", value: "student" } })}
+                    onClick={() => handleChange({ target: { name: "role", value: "candidate" } })}
                   >
                     <User size={18} />
-                    <span className="font-medium">Student</span>
+                    <span className="font-medium">Candidate</span>
                     <input
                       type="radio"
                       name="role"
-                      id="student"
-                      value="student"
-                      checked={input.role === "student"}
+                      id="candidate"
+                      value="candidate"
+                      checked={input.role === "candidate"}
                       onChange={handleChange}
                       className="hidden"
                     />

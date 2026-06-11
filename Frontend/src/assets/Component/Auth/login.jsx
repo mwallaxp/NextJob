@@ -11,7 +11,7 @@ const Login = () => {
   const [input, setInput] = useState({
     email: "",
     password: "",
-    role: "student", // Set default role
+    role: "candidate",
   });
   const [errors, setErrors] = useState({});
   const { loading, user } = useSelector((state) => state.auth);
@@ -193,18 +193,18 @@ const Login = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div 
                     className={`flex items-center justify-center gap-2 p-3 cursor-pointer rounded-lg border ${
-                      input.role === "student" ? "bg-blue-50 border-blue-500 text-blue-700" : "border-gray-300 text-gray-600"
+                      input.role === "candidate" ? "bg-blue-50 border-blue-500 text-blue-700" : "border-gray-300 text-gray-600"
                     }`}
-                    onClick={() => handleChange({ target: { name: "role", value: "student" } })}
+                    onClick={() => handleChange({ target: { name: "role", value: "candidate" } })}
                   >
                     <User size={18} />
-                    <span className="font-medium">Student</span>
+                    <span className="font-medium">Candidate</span>
                     <input
                       type="radio"
                       name="role"
-                      id="student"
-                      value="student"
-                      checked={input.role === "student"}
+                      id="candidate"
+                      value="candidate"
+                      checked={input.role === "candidate"}
                       onChange={handleChange}
                       className="hidden"
                     />
