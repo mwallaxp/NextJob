@@ -16,6 +16,8 @@ const MultiStepJobForm = () => {
     location: '',
     jobType: '',
     experienceLevel: '',
+    skills: [], // Initialize skills as an empty array
+    currency: 'USD', // Default currency, can be changed by user
     position: '',
     companyId: '',
   });
@@ -43,6 +45,8 @@ const MultiStepJobForm = () => {
         title: '', description: '', requirements: '', salary: '',
         location: '', jobType: '', experienceLevel: '', position: '',
         companyId: '',
+        skills: [],
+        currency: 'USD',
       });
       setCurrentStep(1);
     } catch (e) {

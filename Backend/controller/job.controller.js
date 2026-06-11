@@ -6,23 +6,25 @@ import mongoose from "mongoose";
 
 export const postJob = async (req, res)=>{
     try {
-        const {title, description, requirements, salary, location, jobType, experience, position, companyId }=req.body
+        const {title, description, requirements, salary, location, jobType, experienceLevel, position, companyId, currency, skills }=req.body
         const userid=req.id
-        if(!title|| !description|| !requirements|| !salary|| !location|| !jobType||!experience|| !position|| !companyId){
+        if(!title|| !description|| !requirements|| !salary|| !location|| !jobType||!experienceLevel|| !position|| !companyId|| !currency || !skills){
             return res.status(400).json({ message: "Complete the missing field", success: false });
 
         };
         const job = await Job.create( {
             title,
             description,
-            requirements:requirements.split(","),
+            requirements: requirements, // Requirements are now an array from frontend
             salary:Number(salary),
             location, 
             jobType,
-            experience:experience,
+            experience:experienceLevel, // Use experienceLevel from body for the 'experience' model field
             position, 
             company:companyId,
             created_by:userid
+            currency, // Add currency
+            skills, // Add skills
         });
         return res.status(201).json({message:"Job posted successfully", success:true, job})
     } catch (error) {

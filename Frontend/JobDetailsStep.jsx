@@ -5,6 +5,7 @@ import { jobDetailsStepSchema } from '../schemas/jobSchema';
 import { X } from 'lucide-react';
 
 const JobDetailsStep = ({ formData, updateFormData, nextStep }) => {
+  const [requirementInput, setRequirementInput] = useState('');
   const [skillInput, setSkillInput] = useState('');
   const {
     register,
@@ -14,7 +15,11 @@ const JobDetailsStep = ({ formData, updateFormData, nextStep }) => {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(jobDetailsStepSchema),
-    defaultValues: { ...formData, skills: formData.skills || [] },
+    defaultValues: {
+      ...formData,
+      skills: formData.skills || [],
+      requirements: formData.requirements || [],
+    },
   });
 
   const skills = watch('skills');
@@ -27,6 +32,22 @@ const JobDetailsStep = ({ formData, updateFormData, nextStep }) => {
       }
       setSkillInput('');
     }
+  };
+
+  const requirements = watch('requirements');
+
+  const addRequirement = (e) => {
+    if (e.key === 'Enter' && requirementInput.trim()) {
+      e.preventDefault();
+      if (!requirements.includes(requirementInput.trim())) {
+        setValue('requirements', [...requirements, requirementInput.trim()], { shouldValidate: true });
+      }
+      setRequirementInput('');
+    }
+  };
+
+  const removeRequirement = (reqToRemove) => {
+    setValue('requirements', requirements.filter(r => r !== reqToRemove), { shouldValidate: true });
   };
 
   const removeSkill = (skillToRemove) => {
@@ -80,9 +101,28 @@ const JobDetailsStep = ({ formData, updateFormData, nextStep }) => {
       </div>
 
       <div>
-        <label htmlFor="requirements" className="block text-sm font-medium text-gray-700">Requirements (comma-separated)</label>
-        <input type="text" id="requirements" {...register('requirements')}
-               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-brand-500 focus:border-brand-500" />
+        <label className="block text-sm font-medium text-gray-700">Requirements</label>
+        <div className="mt-1 flex flex-wrap gap-2 p-2 border border-gray-300 rounded-md bg-white focus-within:ring-2 focus-within:ring-brand-500 transition-all">
+          {requirements?.map((req, index) => (
+            <span key={index} className="flex items-center gap-1 px-2 py-1 bg-brand-50 text-brand-700 text-sm rounded-lg border border-brand-100">
+              {req}
+              <button type="button" onClick={() => removeRequirement(req)} className="hover:text-red-500">
+                <X size={14} />
+              </button>
+            </span>
+          ))}
+          <input
+            type="text"
+            value={requirementInput}
+            onChange={(e) => setRequirementInput(e.target.value)}
+            onKeyDown={addRequirement}
+            placeholder={requirements?.length === 0 ? "e.g. Bachelor's Degree, Problem-solving (Press Enter)" : ""}
+            className="flex-1 outline-none min-w-[120px] text-sm"
+            // Register the requirements field with react-hook-form, but let the tag logic manage its value
+            {...register('requirements')}
+            hidden // Hide the actual input as we manage it via state and buttons
+          />
+        </div>
         {errors.requirements && <p className="mt-1 text-sm text-red-600">{errors.requirements.message}</p>}
       </div>
 
@@ -91,6 +131,21 @@ const JobDetailsStep = ({ formData, updateFormData, nextStep }) => {
         <input type="number" id="salary" {...register('salary')}
                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-brand-500 focus:border-brand-500" />
         {errors.salary && <p className="mt-1 text-sm text-red-600">{errors.salary.message}</p>}
+      </div>
+
+      <div>
+        <label htmlFor="currency" className="block text-sm font-medium text-gray-700">Currency</label>
+        <select id="currency" {...register('currency')}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-brand-500 focus:border-brand-500">
+          <option value="USD">USD - United States Dollar</option>
+          <option value="NGN">NGN - Nigerian Naira</option>
+          <option value="EUR">EUR - Euro</option>
+          <option value="GBP">GBP - British Pound</option>
+          {/* Add more currencies as needed */}
+        </select>
+        {errors.currency && (
+          <p className="mt-1 text-sm text-red-600">{errors.currency.message}</p>
+        )}
       </div>
 
       <div>

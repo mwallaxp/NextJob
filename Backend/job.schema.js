@@ -7,7 +7,7 @@ export const createJobSchema = z.object({
   body: z.object({
     title: z.string({ required_error: "Job title is required" }).min(3).max(100),
     description: z.string({ required_error: "Job description is required" }).min(20),
-    requirements: z.string({ required_error: "Requirements are required" }),
+    requirements: z.array(z.string()).min(1, "At least one requirement is required"),
     salary: z.coerce.number({ 
       required_error: "Salary is required",
       invalid_type_error: "Salary must be a number" 
@@ -17,6 +17,9 @@ export const createJobSchema = z.object({
       required_error: "Job type is required"
     }),
     experienceLevel: z.coerce.number().int().nonnegative("Experience cannot be negative"),
+    currency: z.enum(["USD", "NGN", "EUR", "GBP"], {
+      required_error: "Currency is required"
+    }).default("USD"), // Default to USD, but allow others
     position: z.coerce.number().int().positive("Must have at least 1 position"),
     companyId: z.string({ required_error: "Company ID is required" }),
     skills: z.array(z.string()).min(1, "At least one skill is required"),

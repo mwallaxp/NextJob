@@ -18,8 +18,13 @@ const jobSchema = new mongoose.Schema({
         required: true
     },
     experience: {
-        type: String,
+        type: Number, // Changed to Number to match schema
         required: true
+    },
+    currency: {
+        type: String,
+        enum: ["USD", "NGN", "EUR", "GBP"], // Example currencies, adjust as needed
+        default: "USD"
     },
     location: {
         type: String,
