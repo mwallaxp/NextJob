@@ -10,8 +10,6 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.auth.user);
-  const loading = useSelector((state) => state.auth.loading);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Register a new user

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../../utils/api';
 import { Users, Briefcase, CheckCircle, Search, ChevronLeft, ChevronRight, LogIn, Activity, ArrowUpRight } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { StatCard } from '../../components/DesignSystem'; // Assuming StatCard is exported from DesignSystem
+import { StatCard } from '../../../components/DesignSystem'; // Assuming StatCard is exported from DesignSystem
 import { useAuth } from '../shared/AuthContext';
 
 const AdminDashboard = () => {
