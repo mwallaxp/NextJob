@@ -153,7 +153,7 @@ const AdminDashboard = () => {
               onChange={(e) => setSelectedRole(e.target.value)}
             >
               <option value="">All Roles</option>
-              <option value="student">Candidate</option>
+              <option value="candidate">Candidate</option>
               <option value="recruiter">Recruiter</option>
             </select>
             <button

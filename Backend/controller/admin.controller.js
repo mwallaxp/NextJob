@@ -69,7 +69,7 @@ export const toggleUserStatus = catchAsync(async (req, res, next) => {
  */
 export const getAdminStats = catchAsync(async (req, res, next) => {
   const [candidates, recruiters, totalJobs, activeJobs, recentLogs] = await Promise.all([
-    User.countDocuments({ role: 'student' }), // Assuming 'student' is the candidate role
+    User.countDocuments({ role: 'candidate' }),
     User.countDocuments({ role: 'recruiter' }),
     Job.countDocuments(),
     Job.countDocuments({ status: 'active' }),
