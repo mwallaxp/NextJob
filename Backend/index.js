@@ -123,7 +123,7 @@ io.on("connection", (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.use("/api/v1/user", userRouter)
+app.use("/api/v1/user", userRouter);
 app.use("/api/v1/company", companyRoute)
 app.use("/api/v1/job", JobRoute)
 app.use("/api/v1/application", ApplicationRouter)
@@ -137,7 +137,8 @@ app.use("/api/v1/disputes", disputeRouter)
 
 app.use(globalErrorHandler);
 
-server.listen(PORT, async () => {
+// Explicitly bind to 0.0.0.0 for Render deployment
+server.listen(PORT, "0.0.0.0", async () => {
     try {
         await connectDB();
         console.log(`Server listening on port ${PORT}`);
