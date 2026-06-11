@@ -2,8 +2,8 @@ import catchAsync from '../catchAsync.js';
 import AppError from '../AppError.js';
 import User from '../modules/user.module.js';
 import jwt from 'jsonwebtoken';
-import Job from '../modules/job.model.js'; // Verify if this should be job.module.js
-import AuditLog from '../modules/auditLog.model.js'; // Verify if this should be auditLog.module.js
+import Job from '../modules/job.model.js';
+import AuditLog from '../modules/auditLog.model.js';
 
 /**
  * Get all users with filtering and pagination

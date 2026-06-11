@@ -7,7 +7,7 @@ import {
   shadowLogin
 } from '../controller/admin.controller.js';
 import { isAuthenticate } from '../authentication/isAuthentication.js';
-import { authorizeRoles } from '../middleware/auth.js';
+import { authorizeRoles } from '../authentication/auth.js';
 
 const router = express.Router();
 
