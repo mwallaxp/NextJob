@@ -37,6 +37,28 @@ export const globalStyles = `
   .hover\:bg-blue-700:hover, .hover\:bg-blue-600:hover, .hover\:bg-orange-600:hover, .hover\:bg-orange-700:hover { opacity: 0.95 !important; }
   .hover\:text-blue-600:hover, .hover\:text-orange-600:hover { color: var(--accent) !important; }
 
+  /* Ensure form controls use dark theme */
+  input, textarea, select, button {
+    background: transparent !important;
+    color: var(--text) !important;
+    border-color: var(--border) !important;
+  }
+
+  /* Links and buttons */
+  a, button { color: var(--text) !important; }
+  a:hover, button:hover { opacity: 0.95 !important; }
+
+  /* Cards, panels */
+  .card, .panel, .modal, .shadow-xl { background: var(--card-bg) !important; color: var(--text) !important; }
+
+  /* Utility fallbacks for remaining Tailwind color classes */
+  .text-blue-600, .text-orange-600, .text-red-600, .text-green-500 { color: var(--text) !important; }
+  .bg-orange-500, .bg-orange-600, .bg-red-50, .bg-white { background: var(--card-bg) !important; }
+
+  /* Force body-level inheritance for any direct color styles */
+  *[class*="text-"] { color: inherit !important; }
+  *[class*="bg-"] { background: inherit !important; }
+
 
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(24px); }

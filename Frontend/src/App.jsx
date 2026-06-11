@@ -1,7 +1,9 @@
-import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Signup from "./assets/Component/shared/Signup";
 import { Home } from "./assets/Component/Auth/Home";
 import Login from "./assets/Component/Auth/login.jsx";
+import ForgotPassword from "./assets/Component/Auth/ForgotPassword.jsx";
+import ResetPassword from "./assets/Component/Auth/ResetPassword.jsx";
 import Jobs from "./assets/Component/Jobs.jsx";
 import Browse from "./assets/Component/Browse.jsx";
 import Profile from "./assets/Component/Profile.jsx";
@@ -34,6 +36,14 @@ const appRouter = createBrowserRouter([
       {
         path: "login",
         element: <Login />,
+      },
+      {
+        path: "forgot-password",
+        element: <ForgotPassword />,
+      },
+      {
+        path: "reset-password/:token",
+        element: <ResetPassword />,
       },
       {
         path: "signup",

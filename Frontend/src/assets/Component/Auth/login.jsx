@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
+import api from "../../../utils/api";
 import { setLoading, setUser } from "../../../redux/authSlice";
 import { toast } from 'react-toastify';
 import { USER_API_END_POINT } from "../../../utils/constant";
@@ -52,8 +52,8 @@ const Login = () => {
     // Password validation
     if (!password) {
       newErrors.password = "Password is required";
-    } else if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+    } else if (password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
     }
     
     // Role validation
@@ -74,18 +74,16 @@ const Login = () => {
     try {
       dispatch(setLoading(true));
       
-      const response = await axios.post(`${USER_API_END_POINT}/login`, {
+      const response = await api.post(`${USER_API_END_POINT}/login`, {
         email: input.email.trim(),
         password: input.password,
         role: input.role.trim(),
-      }, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
       });
 
       if (response.data.success) {
+        if (response.data.token) {
+          localStorage.setItem("token", response.data.token);
+        }
         dispatch(setUser(response.data.user));
         toast.success("Login successful!");
         const destination = response.data.user.role === 'recruiter' ? '/admin' : '/';
@@ -255,7 +253,7 @@ const Login = () => {
 
               <button
                 type="submit"
-                // disabled={loading}
+                disabled={loading}
                 className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
                   loading ? "opacity-75 cursor-not-allowed" : ""
                 }`}

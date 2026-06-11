@@ -4,6 +4,7 @@ import morgan from "morgan";
 import bodyParser from "body-parser";
 import cors from "cors";
 import dotenv from "dotenv";
+import rateLimit from "express-rate-limit";
 import http from "http";
 import { Server } from "socket.io";
 import connectDB from "./utility/db.js"
@@ -24,6 +25,13 @@ dotenv.config({})
 
 const app = express();
 const server = http.createServer(app);
+
+// Rate Limiting: Prevent brute force and abuse
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per window
+  message: "Too many requests from this IP, please try again after 15 minutes"
+});
 
 // Build allowed origins list from env var (comma separated) or single CLIENT_URL
 const rawClientUrls = process.env.CLIENT_URLS || process.env.CLIENT_URL || "https://next-job-vubs.vercel.app";
@@ -47,6 +55,7 @@ const io = new Server(server, {
 });
 
 app.use(helmet());
+app.use("/api", limiter); // Apply rate limiting to all API routes
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
@@ -79,11 +88,20 @@ app.use((req, res, next) => {
 
 app.use(cors(corsOptions));
 
+// Make io accessible to our routes
+app.set("io", io);
+
 // Socket.io connection handling
 io.on("connection", (socket) => {
   console.log("New client connected:", socket.id);
 
-  // Join a conversation room
+  // User joins their personal notification room based on ID
+  socket.on("join-notifications", (userId) => {
+    socket.join(`user_${userId}`);
+    console.log(`User ${userId} joined notification room`);
+  });
+
+  // Join a conversation room for chat
   socket.on("join-conversation", (conversationId) => {
     socket.join(conversationId);
     console.log(`User ${socket.id} joined conversation ${conversationId}`);

@@ -125,8 +125,8 @@ const Signup = () => {
     // Password validation
     if (!input.password) {
       newErrors.password = "Password is required";
-    } else if (input.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+    } else if (input.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
     }
     
     // Confirm password validation

@@ -37,20 +37,44 @@ export const postJob = catchAsync(async (req, res, next) => {
  * Get all jobs with optional keyword filtering
  */
 export const getAllJobs = catchAsync(async (req, res, next) => {
-  const keyword = req.query.keyword || "";
-  const query = {
-    $or: [
+  const { keyword, jobType, experienceLevel, location, minSalary, sort, page, limit } = req.query;
+  
+  // Pagination setup
+  const pageNum = Number(page) || 1;
+  const limitNum = Number(limit) || 10;
+  const skip = (pageNum - 1) * limitNum;
+  
+  const query = {};
+
+  if (keyword) {
+    query.$or = [
       { title: { $regex: keyword, $options: "i" } },
       { description: { $regex: keyword, $options: "i" } },
-    ],
-  };
+    ];
+  }
 
+  if (jobType) query.jobType = jobType;
+  if (location) query.location = { $regex: location, $options: "i" };
+  if (experienceLevel) query.experience = { $gte: Number(experienceLevel) };
+  if (minSalary) query.salary = { $gte: Number(minSalary) };
+
+  // Sorting setup (default to newest)
+  let sortBy = { createdAt: -1 };
+  if (sort === 'salary_asc') sortBy = { salary: 1 };
+  if (sort === 'salary_desc') sortBy = { salary: -1 };
+
+  const totalJobs = await Job.countDocuments(query);
   const jobs = await Job.find(query)
     .populate({ path: "company" })
-    .sort({ createdAt: -1 });
+    .sort(sortBy)
+    .skip(skip)
+    .limit(limitNum);
 
   res.status(200).json({
     success: true,
+    totalJobs,
+    currentPage: pageNum,
+    totalPages: Math.ceil(totalJobs / limitNum),
     jobs,
   });
 });

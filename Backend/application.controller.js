@@ -2,6 +2,7 @@ import catchAsync from './catchAsync.js';
 import AppError from './AppError.js';
 import Application from './modules/application.model.js';
 import Job from './modules/job.model.js';
+import mongoose from 'mongoose';
 
 /**
  * Submit a bid/application for a job
@@ -26,15 +27,24 @@ export const applyJob = catchAsync(async (req, res, next) => {
     return next(new AppError("Job not found", 404));
   }
 
-  // 3. Create a new application
-  const newApplication = await Application.create({
-    job: jobId,
-    applicant: userId,
+  // 3. Create a new application and update Job using a Transaction
+  const session = await mongoose.startSession();
+  let newApplication;
+  
+  await session.withTransaction(async () => {
+    [newApplication] = await Application.create([{
+      job: jobId,
+      applicant: userId,
+    }], { session });
+
+    await Job.findByIdAndUpdate(
+      jobId, 
+      { $push: { applications: newApplication._id } },
+      { session }
+    );
   });
 
-  // 4. Update the Job document with the new application reference
-  job.applications.push(newApplication._id);
-  await job.save();
+  session.endSession();
 
   res.status(201).json({ 
     success: true, 
@@ -103,6 +113,16 @@ export const updateStatus = catchAsync(async (req, res, next) => {
 
   application.status = status.toLowerCase();
   await application.save();
+
+  // Trigger real-time notification via Socket.io
+  const io = req.app.get("io");
+  if (io) {
+    io.to(`user_${application.applicant}`).emit("notification", {
+      type: "APPLICATION_STATUS_UPDATE",
+      message: `Your application status has been updated to ${status}.`,
+      applicationId: application._id
+    });
+  }
 
   res.status(200).json({ success: true, message: "Status updated successfully." });
 });

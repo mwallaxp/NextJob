@@ -1,8 +1,13 @@
 import bcrypt from "bcryptjs";
 import User from "../modules/user.module.js";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import cloudinary from "../utility/Cloudinary.js";
 import getDataUrl from "../utility/DataUrl.js";
+import {
+  isEmailConfigured,
+  sendPasswordResetEmail,
+} from "../utility/email.js";
 
 export const registration = async (req, res) => {
   try {
@@ -266,6 +271,122 @@ export const getCurrentUser = async (req, res) => {
     console.error("Get current user error:", error);
     return res.status(500).json({
       message: "Server error",
+      success: false,
+    });
+  }
+};
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        message: "Email is required",
+        success: false,
+      });
+    }
+
+    const user = await User.findOne({ email });
+
+    // Keep the public response generic so this endpoint does not reveal accounts.
+    if (!user) {
+      return res.status(200).json({
+        message: "If an account exists for that email, a reset link has been generated.",
+        success: true,
+      });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    user.resetPasswordToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+    user.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
+    await user.save({ validateBeforeSave: false });
+
+    const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+    const resetUrl = `${clientUrl.replace(/\/$/, "")}/reset-password/${resetToken}`;
+
+    if (isEmailConfigured()) {
+      await sendPasswordResetEmail({
+        to: user.email,
+        name: user.fullname,
+        resetUrl,
+      });
+
+      return res.status(200).json({
+        message: "If an account exists for that email, a reset link has been sent.",
+        success: true,
+      });
+    }
+
+    return res.status(200).json({
+      message: "Email is not configured. Development reset link generated.",
+      success: true,
+      resetUrl,
+    });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    return res.status(500).json({
+      message: "Server error during password reset request",
+      success: false,
+    });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password, confirmPassword } = req.body;
+
+    if (!password || !confirmPassword) {
+      return res.status(400).json({
+        message: "Password and confirmation are required",
+        success: false,
+      });
+    }
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        message: "Passwords do not match",
+        success: false,
+      });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({
+        message: "Password must be at least 8 characters",
+        success: false,
+      });
+    }
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "Password reset link is invalid or has expired",
+        success: false,
+      });
+    }
+
+    user.password = await bcrypt.hash(password, 10);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    return res.status(200).json({
+      message: "Password reset successfully. Please log in with your new password.",
+      success: true,
+    });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    return res.status(500).json({
+      message: "Server error during password reset",
       success: false,
     });
   }

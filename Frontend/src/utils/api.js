@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Centralized API URL
-const API_URL = process.env.REACT_APP_API_URL || 'https://nextjob-sw2d.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL || 'https://nextjob-sw2d.onrender.com';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -34,7 +34,7 @@ api.interceptors.response.use(
   },
   (error) => {
     // Check if the error response exists and the status is 401 (Unauthorized)
-    if (error.response && error.response.status === 401) {
+    if (error.response && error.response.status === 401 && !error.config?.skipAuthRedirect) {
       // Clear the local token as it's no longer valid
       localStorage.removeItem('token');
       

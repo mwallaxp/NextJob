@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Bell } from "lucide-react";
@@ -39,6 +39,7 @@ const NavBar = () => {
       const res = await api.get(`${USER_API_END_POINT}/logout`);
       
       if (res.data.success) {
+        localStorage.removeItem("token");
         dispatch(setUser(null));
         toast.success("LogOut successful!");
       navigate("/"); 

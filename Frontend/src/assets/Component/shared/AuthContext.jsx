@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import api from '../../../utils/api';
 import { USER_API_END_POINT } from '../../../utils/constant';
 
@@ -14,14 +14,15 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // The browser will automatically send the 'token' cookie if it exists
-        const response = await api.get('/api/v1/user/current');
+        const response = await api.get(`${USER_API_END_POINT}/current`);
         
         if (response.data.success) {
           setCurrentUser(response.data.user);
+        } else {
+          localStorage.removeItem('token');
         }
-      } catch (err) {
-        // 401/404 means no valid cookie exists, which is fine for init
+      } catch {
+        localStorage.removeItem('token');
         console.log('Not authenticated via cookies');
         setCurrentUser(null);
       }
@@ -49,7 +50,7 @@ export const AuthProvider = ({ children }) => {
         formData.append('profilePhoto', profilePhoto);
       }
       
-      const response = await api.post('/api/users/register', formData, {
+      const response = await api.post(`${USER_API_END_POINT}/registration`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -106,7 +107,8 @@ export const AuthProvider = ({ children }) => {
   // Logout user
   const logout = async () => {
     try {
-      await api.post(`${USER_API_END_POINT}/logout`);
+      await api.get(`${USER_API_END_POINT}/logout`);
+      localStorage.removeItem('token');
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
@@ -133,7 +135,7 @@ export const AuthProvider = ({ children }) => {
         formData.append('resume', resume);
       }
       
-      const response = await api.put(`${USER_API_END_POINT}/profile`, formData, {
+      const response = await api.post(`${USER_API_END_POINT}/profile/update`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

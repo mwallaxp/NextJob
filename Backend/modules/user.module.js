@@ -30,8 +30,10 @@ const userschema = mongoose.Schema({
         company:{type:mongoose.Schema.Types.ObjectId, ref: "company"},
         profilePhoto:{ type:String,
             default:""}
-       }
-},{timespan:true});
+       },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
+},{timestamps:true});
 
 const User = mongoose.model("User", userschema);
 export default User; // Ensure that this is `export default`

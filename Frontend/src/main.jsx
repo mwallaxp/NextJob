@@ -12,6 +12,7 @@ import store from "./redux/store.js";
 import { persistStore } from "redux-persist";
 import { PersistGate } from "redux-persist/es/integration/react";
 import axios from "axios";
+import AuthInitializer from "./assets/Component/shared/AuthInitializer.jsx";
 
 axios.defaults.withCredentials = true;
 
@@ -29,6 +30,7 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
     <PersistGate loading={null} persistor={persistor}>
+        <AuthInitializer />
         <App />
       </PersistGate>
     </Provider>
