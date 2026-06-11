@@ -1,17 +1,22 @@
-import express from "express";
-import isAuthenticated from "../middleware/isAuthenticated.js"; // Standard auth check
-import { isAdmin } from "../middleware/isAdmin.js";
-import { getAllUsers, toggleUserStatus, getAdminStats, getAuditLogs, shadowLogin } from "../controllers/admin.controller.js";
+import express from 'express';
+import {
+  getAllUsers,
+  toggleUserStatus,
+  getAdminStats,
+  getAuditLogs,
+  shadowLogin
+} from '../controller/admin.controller.js';
+import { isAuthenticated, authorizeRoles } from '../middleware/auth.js'; // Assuming these middlewares exist
 
 const router = express.Router();
 
-// All routes below require both Authentication and Admin Role
-router.use(isAuthenticated, isAdmin);
+// All admin routes should be protected and only accessible by admins
+router.use(isAuthenticated, authorizeRoles('admin'));
 
-router.route("/users").get(getAllUsers);
-router.route("/users/:userId/status").patch(toggleUserStatus);
-router.route("/stats").get(getAdminStats);
-router.route("/logs").get(getAuditLogs); // Assuming you want to add this route
-router.route("/shadow-login/:userId").post(shadowLogin);
+router.get('/stats', getAdminStats);
+router.get('/users', getAllUsers);
+router.patch('/users/:userId/status', toggleUserStatus);
+router.get('/logs', getAuditLogs);
+router.post('/shadow-login/:userId', shadowLogin);
 
 export default router;
