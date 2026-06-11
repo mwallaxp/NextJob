@@ -1,16 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Bell } from "lucide-react";
 import { USER_API_END_POINT } from "../../../utils/constant";
-import { setUser } from "../../../redux/authSlice";
 import api from "../../../utils/api"; // Ensure api is imported
 import { useAuth } from "./AuthContext";
 import { toast } from 'react-toastify';
 
 const NavBar = () => {
   const { user } = useSelector(store => store.auth);
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -42,14 +40,10 @@ const NavBar = () => {
     try {
       if (isShadowMode) {
         await exitShadowMode();
-        dispatch(setUser(null)); // Clear Redux to trigger re-fetch of admin profile
         toast.info("Exited shadow mode.");
         navigate("/admin");
       } else {
-        // Use the context logout which handles localStorage, sessionStorage, and Context state
         await logout();
-        // Additionally clear Redux state
-        dispatch(setUser(null));
         toast.success("LogOut successful!");
         navigate("/"); 
       }

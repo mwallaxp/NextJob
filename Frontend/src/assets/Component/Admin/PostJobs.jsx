@@ -29,7 +29,7 @@ const PostJobs = () => {
     salary: "",
     location: "",
     jobType: "",
-    experience: "",
+    experienceLevel: "",
     position: "",
     companyId: "",
   });
@@ -52,7 +52,7 @@ const PostJobs = () => {
       newErrors.salary = "Salary must be a number or range (e.g., 80000 or 80000-100000)";
     if (!input.location) newErrors.location = "Location is required";
     if (!input.jobType) newErrors.jobType = "Job type is required";
-    if (!input.experience) newErrors.experience = "Experience level is required";
+    if (!input.experienceLevel) newErrors.experienceLevel = "Experience level is required";
     if (!input.position || input.position <= 0) newErrors.position = "Number of positions must be greater than 0";
     if (!input.companyId) newErrors.companyId = "Company selection is required";
 
@@ -216,17 +216,17 @@ const PostJobs = () => {
                 {errors.jobType && <p className="text-red-500 text-sm mt-1">{errors.jobType}</p>}
               </div>
               <div className="col-span-2 md:col-span-1">
-                <label htmlFor="experience" className="flex items-center mb-2">
+                <label htmlFor="experienceLevel" className="flex items-center mb-2">
                   <Award size={18} className="mr-2 text-yellow-600" />
                   <span className="font-medium text-gray-700">Experience Level</span>
                 </label>
                 <select
-                  name="experience"
-                  id="experience"
-                  value={input.experience}
+                  name="experienceLevel"
+                  id="experienceLevel"
+                  value={input.experienceLevel}
                   onChange={changeEventHandler}
                   className={`w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 transition-all ${
-                    errors.experience ? "border-red-500" : "border-gray-300"
+                    errors.experienceLevel ? "border-red-500" : "border-gray-300"
                   }`}
                 >
                   <option value="">Select Experience Level</option>
@@ -236,7 +236,7 @@ const PostJobs = () => {
                     </option>
                   ))}
                 </select>
-                {errors.experience && <p className="text-red-500 text-sm mt-1">{errors.experience}</p>}
+                {errors.experienceLevel && <p className="text-red-500 text-sm mt-1">{errors.experienceLevel}</p>}
               </div>
               <div className="col-span-2 md:col-span-1">
                 <label htmlFor="position" className="flex items-center mb-2">

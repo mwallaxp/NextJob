@@ -12,7 +12,8 @@ const AuthInitializer = () => {
     let active = true;
 
     const loadCurrentUser = async () => {
-      if (user) return;
+      const token = localStorage.getItem('token');
+      if (!token && !user) return;
 
       dispatch(setLoading(true));
       try {
@@ -38,9 +39,9 @@ const AuthInitializer = () => {
     loadCurrentUser();
 
     return () => {
-      active = false;
+      active = false; // Cleanup to prevent state updates on unmounted component
     };
-  }, [dispatch, user]);
+  }, [dispatch]); // Only run on initial mount
 
   return null;
 };

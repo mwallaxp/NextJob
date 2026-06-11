@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { setUser, setLoading as setReduxLoading } from '../../../redux/authSlice';
 import api from '../../../utils/api';
 import { USER_API_END_POINT } from '../../../utils/constant';
 
@@ -6,32 +8,11 @@ import { USER_API_END_POINT } from '../../../utils/constant';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
+  const dispatch = useDispatch();
+  const currentUser = useSelector((state) => state.auth.user);
+  const loading = useSelector((state) => state.auth.loading);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Initialize auth state on component mount
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const response = await api.get(`${USER_API_END_POINT}/current`);
-        
-        if (response.data.success) {
-          setCurrentUser(response.data.user);
-        } else {
-          localStorage.removeItem('token');
-        }
-      } catch {
-        localStorage.removeItem('token');
-        console.log('Not authenticated via cookies');
-        setCurrentUser(null);
-      }
-      
-      setLoading(false);
-    };
-
-    initAuth();
-  }, []);
 
   // Register a new user
   const register = async (userData, profilePhoto) => {
@@ -62,7 +43,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', token);
         
         // Update current user
-        setCurrentUser(user);
+        dispatch(setUser(user));
         return { success: true };
       } else {
         setError(response.data.message);
@@ -91,7 +72,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', token);
         
         // Update current user
-        setCurrentUser(user);
+        dispatch(setUser(user));
         return { success: true };
       } else {
         setError(response.data.message);
@@ -115,7 +96,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       // Always clear local state regardless of API response
       localStorage.removeItem('token');
-      setCurrentUser(null);
+      dispatch(setUser(null));
     }
   };
 
@@ -144,7 +125,7 @@ export const AuthProvider = ({ children }) => {
       
       if (response.data.success) {
         // Update current user with new data
-        setCurrentUser(response.data.user);
+        dispatch(setUser(response.data.user));
         return { success: true };
       } else {
         setError(response.data.message);
@@ -170,7 +151,7 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post(`/api/v1/admin/shadow-login/${userId}`);
       if (response.data.success) {
         localStorage.setItem('token', response.data.token);
-        setCurrentUser(response.data.user); // Update with shadow user's data
+        dispatch(setUser(response.data.user)); // Update Redux with shadow user's data
         return { success: true };
       } else {
         setError(response.data.message);
@@ -195,7 +176,17 @@ export const AuthProvider = ({ children }) => {
     const originalAdminToken = sessionStorage.getItem('adminOriginalToken');
     localStorage.setItem('token', originalAdminToken);
     sessionStorage.removeItem('adminOriginalToken');
-    await initAuth(); // Re-initialize auth to fetch admin's user data
+    
+    // Re-fetch the actual admin data to sync Redux
+    try {
+      const response = await api.get(`${USER_API_END_POINT}/current`);
+      if (response.data.success) {
+        dispatch(setUser(response.data.user));
+      }
+    } catch (err) {
+      console.error("Failed to restore admin profile", err);
+      dispatch(setUser(null));
+    }
   };
 
   // Context value

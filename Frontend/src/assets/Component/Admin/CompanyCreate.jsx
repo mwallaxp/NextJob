@@ -25,7 +25,7 @@ const CompanyCreate = () => {
       // console.log("Register payload:", { companyName });
       const res = await axios.post(
         `${COMPANY_API_END_POINT}/register`,
-        { companyName }, // Changed to match backend
+        { name: companyName },
         {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
