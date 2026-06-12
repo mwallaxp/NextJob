@@ -3,34 +3,26 @@ import User from "../modules/user.module.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import cloudinary from "../utility/Cloudinary.js";
-import getDataUrl from "../utility/DataUrl.js";
 import {
   isEmailConfigured,
   sendPasswordResetEmail,
 } from "../utility/email.js";
 
+// Assuming these schemas are imported from a validation file
+// import { registrationSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema, updateProfileSchema } from '../validation/user.validation.js';
+// import validate from '../middleware/validation.middleware.js';
+
+const getCookieOptions = () => ({
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+});
 export const registration = async (req, res) => {
   try {
-    const { fullname, phonenumber, email, password, role } = req.body;
-
-    // Validate required fields
-    const requiredFields = { fullname, phonenumber, email, password, role };
-    for (const [field, value] of Object.entries(requiredFields)) {
-      if (!value) {
-        return res.status(400).json({
-          message: `Missing required field: ${field}`,
-          success: false,
-        });
-      }
-    }
-
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res
-        .status(400)
-        .json({ message: "Invalid email format", success: false });
-    }
+    // Assuming validation middleware has already processed req.body
+    // and populated req.validatedBody
+    const { fullname, phonenumber, email, password, role } = req.validatedBody || req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -40,43 +32,11 @@ export const registration = async (req, res) => {
         .json({ message: "Email already registered", success: false });
     }
 
-    // Password strength validation
-    if (password.length < 8) {
-      return res.status(400).json({
-        message: "Password must be at least 8 characters",
-        success: false,
-      });
-    }
-
     // Hash password
     const hashPassword = await bcrypt.hash(password, 10);
 
-    // Process profile photo if provided
-    let profilePhotoUrl = ""; // Default empty URL
-    if (req.file) {
-      try {
-        const result = await new Promise((resolve, reject) => {
-          const stream = cloudinary.uploader.upload_stream(
-            {
-              folder: "user-profiles", // Organize in a specific folder
-              resource_type: "image",
-            },
-            (error, result) => {
-              if (error) reject(error);
-              else resolve(result);
-            }
-          );
-          stream.end(req.file.buffer);
-        });
-        profilePhotoUrl = result.secure_url;
-      } catch (uploadError) {
-        console.error("Cloudinary upload error:", uploadError);
-        return res.status(400).json({
-          message: "Error uploading profile photo",
-          success: false,
-        });
-      }
-    }
+    // URL provided by cloudinaryUpload middleware
+    const profilePhotoUrl = req.fileUrl || "";
 
     // Create new user
     const newUser = await User.create({
@@ -99,14 +59,7 @@ export const registration = async (req, res) => {
       expiresIn: "1d",
     });
 
-    const isProduction = process.env.NODE_ENV === "production";
-    res.cookie("token", token, {
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
-    });
-
+    res.cookie("token", token, getCookieOptions());
     return res.status(201).json({
       message: "Account created successfully",
       success: true,
@@ -137,22 +90,9 @@ export const registration = async (req, res) => {
  */
 export const login = async (req, res) => {
   try {
-    const { email, password, role } = req.body;
-
-    // Validate required fields
-    const missingFields = [];
-    if (!email) missingFields.push("email");
-    if (!password) missingFields.push("password");
-    if (!role) missingFields.push("role");
-
-    if (missingFields.length > 0) {
-      return res.status(400).json({
-        message: `The following fields are missing: ${missingFields.join(
-          ", "
-        )}`,
-        success: false,
-      });
-    }
+    // Assuming validation middleware has already processed req.body
+    // and populated req.validatedBody
+    const { email, password, role } = req.validatedBody || req.body;
 
     // Find user by email
     const user = await User.findOne({ email });
@@ -190,14 +130,7 @@ export const login = async (req, res) => {
       expiresIn: "1d",
     });
 
-    const isProduction = process.env.NODE_ENV === "production";
-    // Set cookie
-    res.cookie("token", token, {
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
-    });
+    res.cookie("token", token, getCookieOptions());
 
     // Send response
     return res.status(200).json({
@@ -278,15 +211,10 @@ export const getCurrentUser = async (req, res) => {
 
 export const forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({
-        message: "Email is required",
-        success: false,
-      });
-    }
-
+    // Assuming validation middleware has already processed req.body
+    // and populated req.validatedBody
+    const { email } = req.validatedBody || req.body;
+    
     const user = await User.findOne({ email });
 
     // Keep the public response generic so this endpoint does not reveal accounts.
@@ -338,28 +266,10 @@ export const forgotPassword = async (req, res) => {
 export const resetPassword = async (req, res) => {
   try {
     const { token } = req.params;
-    const { password, confirmPassword } = req.body;
-
-    if (!password || !confirmPassword) {
-      return res.status(400).json({
-        message: "Password and confirmation are required",
-        success: false,
-      });
-    }
-
-    if (password !== confirmPassword) {
-      return res.status(400).json({
-        message: "Passwords do not match",
-        success: false,
-      });
-    }
-
-    if (password.length < 8) {
-      return res.status(400).json({
-        message: "Password must be at least 8 characters",
-        success: false,
-      });
-    }
+    // Assuming validation middleware has already processed req.body
+    // and populated req.validatedBody
+    const { password } = req.validatedBody || req.body;
+    // confirmPassword is validated by Joi.ref('password') in the schema
 
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
     const user = await User.findOne({
@@ -400,7 +310,9 @@ export const resetPassword = async (req, res) => {
  */
 export const updateProfile = async (req, res) => {
   try {
-    const { fullname, email, phonenumber, bio, skills } = req.body;
+    // Assuming validation middleware has already processed req.body
+    // and populated req.validatedBody
+    const { fullname, email, phonenumber, bio, skills } = req.validatedBody || req.body;
     const userId = req.id; // Get user ID from authenticated user
     let user = await User.findById(userId);
 
@@ -409,31 +321,14 @@ export const updateProfile = async (req, res) => {
     }
 
     // Process resume file if provided
-    if (req.file) {
-      try {
-        const dataUriContent = getDataUrl(req.file);
-        const cloudResponse = await cloudinary.uploader.upload(dataUriContent, {
-          folder: "user-resumes",
-          resource_type: "auto",
-        });
-
-        if (cloudResponse) {
-          user.profile.resume = cloudResponse.secure_url;
-          user.profile.resumeOriginalName = req.file.originalname;
-        }
-      } catch (uploadError) {
-        console.error("Resume upload error:", uploadError);
-        return res.status(400).json({ message: "Error uploading resume", success: false });
-      }
+    if (req.fileUrl) {
+      user.profile.resume = req.fileUrl;
+      user.profile.resumeOriginalName = req.file.originalname;
     }
 
     // Process skills if provided
-    let skillsArray;
     if (skills) {
-      skillsArray =
-        typeof skills === "string"
-          ? skills.split(",").map((skill) => skill.trim())
-          : skills;
+      user.profile.skills = Array.isArray(skills) ? skills : skills.split(",").map(s => s.trim());
     }
 
     // Update user data with provided fields
@@ -450,7 +345,6 @@ export const updateProfile = async (req, res) => {
     }
     if (phonenumber) user.phonenumber = phonenumber;
     if (bio) user.profile.bio = bio;
-    if (skillsArray) user.profile.skills = skillsArray;
 
     // Save updated user document
     await user.save();

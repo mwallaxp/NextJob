@@ -7,6 +7,18 @@ import { toast } from 'react-toastify';
 import { USER_API_END_POINT } from "../../../utils/constant";
 import { Shield, User, Mail, Phone, Lock, Upload, Building, CheckCircle } from "lucide-react";
 
+const calculatePasswordStrength = (password) => {
+  let score = 0;
+  if (!password) return score;
+  
+  if (password.length >= 8) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+  
+  return Math.min(score, 4);
+};
+
 const Signup = () => {
   const [input, setInput] = useState({
     fullname: "",
@@ -37,11 +49,6 @@ const Signup = () => {
     }
   }, [user, navigate]);
 
-  // For debugging the loading state
-  useEffect(() => {
-    console.log("Loading state:", loading);
-  }, [loading]);
-
   
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -65,20 +72,6 @@ const Signup = () => {
       
       setPasswordStrength({ score, feedback });
     }
-  };
-
-  const calculatePasswordStrength = (password) => {
-    let score = 0;
-    
-    // Length check
-    if (password.length >= 8) score++;
-    
-    // Complexity checks
-    if (/[A-Z]/.test(password)) score++;
-    if (/[0-9]/.test(password)) score++;
-    if (/[^A-Za-z0-9]/.test(password)) score++;
-    
-    return Math.min(score, 4);
   };
 
   const handleFileChange = (e) => {

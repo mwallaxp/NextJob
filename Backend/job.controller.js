@@ -1,20 +1,12 @@
 import catchAsync from './catchAsync.js';
 import AppError from './AppError.js';
 import Job from './models/job.model.js'; 
-import cloudinary from 'cloudinary';
-import getDataUri from './utility/datauri.js'; 
 
 export const postJob = catchAsync(async (req, res, next) => {
   const { title, description, requirements, salary, location, jobType, experienceLevel, position, companyId, skills } = req.body;
   
-  let logoUrl = '';
+  const logoUrl = req.fileUrl || '';
   
-  if (req.file) {
-    const fileUri = getDataUri(req.file);
-    const cloudResponse = await cloudinary.v2.uploader.upload(fileUri.content);
-    logoUrl = cloudResponse.secure_url;
-  }
-
   // Ensure skills is an array if passed as a string
   const processedSkills = Array.isArray(skills) ? skills : (skills ? skills.split(",").map(s => s.trim()) : []);
 

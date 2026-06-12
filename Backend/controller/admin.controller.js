@@ -1,5 +1,5 @@
-import catchAsync from '../utility/catchAsync.js'; // Adjusted path
-import AppError from '../AppError.js'; // Adjusted path
+import catchAsync from '../catchAsync.js';
+import AppError from '../AppError.js';
 import User from '../modules/user.module.js';
 import jwt from 'jsonwebtoken';
 import Job from '../modules/job.model.js'; // Standardized import

@@ -12,22 +12,12 @@ const mimeTypes = {
 };
 
 const getDataUrl = (file) => {
-  if (!file || !file.buffer) {
-    throw new Error("Invalid file data");
+  if (!file || !file.buffer || !file.mimetype) {
+    throw new Error("Invalid file data or missing mimetype");
   }
 
   const parser = new DataUriParser();
-
-  // Extract the file extension and map it to MIME type
-  const extName = path.extname(file.originalname).toLowerCase();
-  const mimeType = mimeTypes[extName];
-
-  if (!mimeType) {
-    throw new Error("Unsupported file type");
-  }
-
-  // Generate the data URL
-  return parser.format(mimeType, file.buffer).content;
+  return parser.format(file.mimetype, file.buffer).content;
 };
 
 export default getDataUrl;

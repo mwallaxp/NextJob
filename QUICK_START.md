@@ -24,8 +24,6 @@ import Profile from "./assets/Component/Profile";
 import SavedJobs from "./assets/Component/SavedJobs";
 
 // New Features
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
 import MessagingSystem from "./components/MessagingSystem";
 import ReviewsRatings from "./components/ReviewsRatings";
 import PortfolioShowcase from "./components/PortfolioShowcase";

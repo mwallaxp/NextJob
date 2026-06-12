@@ -1,6 +1,4 @@
 import Company from "../modules/company.model.js";
-import getDataUrl from "../utility/DataUrl.js";
-import cloudinary from "../utility/Cloudinary.js";
 
 const canAccessCompany = (company, req) => {
   return req.role === "admin" || String(company.userid) === String(req.id);
@@ -97,17 +95,9 @@ export const getCompanyById = async (req, res) => {
 export const updateCompany = async (req, res) => {
   try {
     const { name, description, website, location } = req.body;
-    const file = req.file;
-
-    let logo;
-    if (req.file) {
-      const fileUrl = getDataUrl(file);
-      const cloudResponse = await cloudinary.uploader.upload(fileUrl);
-      logo = cloudResponse.secure_url;
-    }
 
     const updateData = { name, description, website, location };
-    if (logo) updateData.logo = logo;
+    if (req.fileUrl) updateData.logo = req.fileUrl;
 
     const existingCompany = await Company.findById(req.params.id);
 
