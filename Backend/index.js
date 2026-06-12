@@ -138,6 +138,7 @@ app.use("/api/v1/disputes", disputeRouter)
 app.use(globalErrorHandler);
 
 // Explicitly bind to 0.0.0.0 for Render deployment
+if (process.env.NODE_ENV !== "test") {
 server.listen(PORT, "0.0.0.0", async () => {
     try {
         await connectDB();
@@ -146,5 +147,6 @@ server.listen(PORT, "0.0.0.0", async () => {
         console.error("Failed to connect to DB on startup:", err);
     }
 });
+}
 
 export default app;

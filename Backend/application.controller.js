@@ -43,25 +43,17 @@ export const applyJob = catchAsync(async (req, res, next) => {
   if (!job) {
     return next(new AppError("Job not found", 404));
   }
+  if (job.status && job.status !== "active") {
+    return next(new AppError("This job is not accepting applications.", 400));
+  }
 
-  // 3. Create a new application and update Job using a Transaction
-  const session = await mongoose.startSession();
-  let newApplication;
-  
-  await session.withTransaction(async () => {
-    [newApplication] = await Application.create([{
-      job: jobId,
-      applicant: userId,
-    }], { session });
-
-    await Job.findByIdAndUpdate(
-      jobId, 
-      { $push: { applications: newApplication._id } },
-      { session }
-    );
+  // 3. Create a new application and update Job
+  const newApplication = await Application.create({
+    job: jobId,
+    applicant: userId,
   });
 
-  session.endSession();
+  await Job.findByIdAndUpdate(jobId, { $push: { applications: newApplication._id } });
 
   res.status(201).json({ 
     success: true, 
@@ -95,6 +87,15 @@ export const getAppliedJobs = catchAsync(async (req, res, next) => {
  */
 export const getApplicants = catchAsync(async (req, res, next) => {
   const jobId = req.params.id;
+  const {
+    page = 1,
+    limit = 10,
+    search = "",
+    status,
+    interviewStage,
+  } = req.query;
+  const pageNumber = Math.max(Number(page) || 1, 1);
+  const limitNumber = Math.min(Math.max(Number(limit) || 10, 1), 50);
   
   // Find the job and populate the applications with the applicant's info
   const job = await Job.findById(jobId).populate({
@@ -108,6 +109,9 @@ export const getApplicants = catchAsync(async (req, res, next) => {
   if (!job) {
     return next(new AppError("Job not found.", 404));
   }
+  if (req.role === "recruiter" && String(job.created_by) !== String(req.id)) {
+    return next(new AppError("You can only view applicants for your own jobs.", 403));
+  }
 
   // Convert to lean objects so we can add the virtual matchScore field
   const jobObj = job.toObject();
@@ -115,7 +119,7 @@ export const getApplicants = catchAsync(async (req, res, next) => {
   const jobSkills = jobObj.skills || [];
 
   // Calculate match score for each applicant
-  jobObj.applications = jobObj.applications.map(app => {
+  let applications = jobObj.applications.map(app => {
     const userSkills = app.applicant?.profile?.skills || [];
     return {
       ...app,
@@ -123,7 +127,28 @@ export const getApplicants = catchAsync(async (req, res, next) => {
     };
   });
 
-  res.status(200).json({ success: true, job: jobObj });
+  if (status) applications = applications.filter((app) => app.status === status);
+  if (interviewStage) applications = applications.filter((app) => app.interviewStage === interviewStage);
+  if (search) {
+    const normalizedSearch = search.toLowerCase();
+    applications = applications.filter((app) => {
+      const applicant = app.applicant || {};
+      return [applicant.fullname, applicant.email, applicant.phonenumber]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(normalizedSearch));
+    });
+  }
+
+  const total = applications.length;
+  jobObj.applications = applications.slice((pageNumber - 1) * limitNumber, pageNumber * limitNumber);
+
+  res.status(200).json({
+    success: true,
+    job: jobObj,
+    total,
+    currentPage: pageNumber,
+    totalPages: Math.ceil(total / limitNumber),
+  });
 });
 
 /**
@@ -141,8 +166,19 @@ export const updateStatus = catchAsync(async (req, res, next) => {
   if (!application) {
     return next(new AppError("Application not found.", 404));
   }
+  const job = await Job.findOne({ _id: application.job, created_by: req.id });
+  if (req.role === "recruiter" && !job) {
+    return next(new AppError("You can only update applications for your own jobs.", 403));
+  }
 
   application.status = status.toLowerCase();
+  if (application.status === "accepted" && application.interviewStage === "applied") {
+    application.interviewStage = "screening";
+  }
+  if (application.status === "rejected") {
+    application.interviewStage = "rejected";
+  }
+  application.reviewedBy = req.id;
   await application.save();
 
   // Trigger real-time notification via Socket.io
@@ -156,4 +192,47 @@ export const updateStatus = catchAsync(async (req, res, next) => {
   }
 
   res.status(200).json({ success: true, message: "Status updated successfully." });
+});
+
+/**
+ * Update recruiter review metadata for an application.
+ */
+export const updateApplicationReview = catchAsync(async (req, res, next) => {
+  const { interviewStage, recruiterComment, note } = req.body;
+  const applicationId = req.params.id;
+
+  const application = await Application.findById(applicationId);
+  if (!application) {
+    return next(new AppError("Application not found.", 404));
+  }
+
+  const job = await Job.findOne({ _id: application.job, created_by: req.id });
+  if (req.role === "recruiter" && !job) {
+    return next(new AppError("You can only review applications for your own jobs.", 403));
+  }
+
+  if (interviewStage) {
+    const allowedStages = ["applied", "screening", "interview", "offer", "hired", "rejected"];
+    if (!allowedStages.includes(interviewStage)) {
+      return next(new AppError("Invalid interview stage.", 400));
+    }
+    application.interviewStage = interviewStage;
+  }
+
+  if (typeof recruiterComment === "string") {
+    application.recruiterComment = recruiterComment;
+  }
+
+  if (note?.trim()) {
+    application.notes.push({ text: note.trim(), createdBy: req.id });
+  }
+
+  application.reviewedBy = req.id;
+  await application.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Application review updated successfully.",
+    application,
+  });
 });

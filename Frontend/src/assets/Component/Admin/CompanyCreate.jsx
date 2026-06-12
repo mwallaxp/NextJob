@@ -37,7 +37,7 @@ const CompanyCreate = () => {
         dispatch(setSingleCompany(res.data.company));
         const companyId = res.data.company?._id;
         if (companyId) {
-          navigate(`/admin/companies/${companyId}`);
+          navigate(`/recruiter/companies/${companyId}`);
         } else {
           setError("Company created, but ID not found. Please try again.");
         }
@@ -90,7 +90,7 @@ const CompanyCreate = () => {
           <div className="flex items-center gap-4 mt-6">
             <button
               className="px-5 py-2 border border-gray-300 rounded-md font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all"
-              onClick={() => navigate("/admin/companies")}
+              onClick={() => navigate("/recruiter/companies")}
               disabled={isLoading}
             >
               Cancel

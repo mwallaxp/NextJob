@@ -2,9 +2,13 @@ import Company from "../modules/company.model.js";
 import getDataUrl from "../utility/DataUrl.js";
 import cloudinary from "../utility/Cloudinary.js";
 
+const canAccessCompany = (company, req) => {
+  return req.role === "admin" || String(company.userid) === String(req.id);
+};
+
 export const registerCompany = async (req, res) => {
   try {
-    const { companyName } = req.body;
+    const companyName = req.body.companyName || req.body.name;
 
     if (!companyName) {
       return res
@@ -72,6 +76,11 @@ export const getCompanyById = async (req, res) => {
         .status(404)
         .json({ message: "Company not found", success: false });
     }
+    if (req.role === "recruiter" && !canAccessCompany(company, req)) {
+      return res
+        .status(403)
+        .json({ message: "You can only access companies owned by your account", success: false });
+    }
 
     return res.status(200).json({
       company,
@@ -100,18 +109,27 @@ export const updateCompany = async (req, res) => {
     const updateData = { name, description, website, location };
     if (logo) updateData.logo = logo;
 
-    const company = await Company.findByIdAndUpdate(
-      req.params.id, 
-      updateData, {
-      new: true,
-      runValidators: true
-    });
+    const existingCompany = await Company.findById(req.params.id);
 
-    if (!company) {
+    if (!existingCompany) {
       return res
         .status(404)
         .json({ message: "Company not found", success: false });
     }
+    if (req.role === "recruiter" && !canAccessCompany(existingCompany, req)) {
+      return res
+        .status(403)
+        .json({ message: "You can only update companies owned by your account", success: false });
+    }
+
+    const company = await Company.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      {
+        new: true,
+        runValidators: true
+      }
+    );
 
     return res.status(200).json({
       message: "Company information updated successfully",

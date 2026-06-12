@@ -1,211 +1,170 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import api from '../../../utils/api';
-import { Users, Briefcase, CheckCircle, Search, ChevronLeft, ChevronRight, LogIn, Activity, ArrowUpRight } from 'lucide-react';
-import { toast } from 'react-toastify';
-import { StatCard } from '../../../components/DesignSystem'; // Corrected import path
-import { useAuth } from '../shared/AuthContext';
+import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import useGetAllAdminJobs from "../Hooks/useGetAllAdminJobs";
+import useGetAllCompanies from "../Hooks/useGetAllCompanies";
+import {
+  ArrowUpRight,
+  Briefcase,
+  Building2,
+  CheckCircle2,
+  Clock3,
+  Plus,
+  Search,
+  Users,
+} from "lucide-react";
+
+const StatTile = ({ icon, label, value, tone = "dark" }) => (
+  <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+    <div className="flex items-center justify-between">
+      <div className={`flex h-10 w-10 items-center justify-center rounded-full ${tone === "dark" ? "bg-zinc-950 text-white" : "bg-zinc-100 text-zinc-950"}`}>
+        {icon}
+      </div>
+      <ArrowUpRight size={18} className="text-zinc-400" />
+    </div>
+    <p className="mt-6 text-3xl font-semibold tracking-tight text-zinc-950">{value}</p>
+    <p className="mt-1 text-sm font-medium text-zinc-500">{label}</p>
+  </div>
+);
 
 const AdminDashboard = () => {
-  const { currentUser } = useAuth();
-  const [stats, setStats] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalUsersCount, setTotalUsersCount] = useState(0);
-  const [limit] = useState(10); // Number of users per page
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRole, setSelectedRole] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('');
+  useGetAllAdminJobs();
+  useGetAllCompanies();
 
-  const fetchAdminStats = useCallback(async () => {
-    try {
-      const response = await api.get('/api/v1/admin/stats');
-      if (response.data.success) {
-        setStats(response.data.stats);
-      }
-    } catch (err) {
-      console.error('Error fetching admin stats:', err);
-      setError('Failed to fetch admin statistics.');
-    }
-  }, []);
+  const { allAdminJobs = [] } = useSelector((store) => store.job);
+  const { companies = [] } = useSelector((store) => store.company);
+  const { user } = useSelector((store) => store.auth);
 
-  const fetchUsers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = {
-        page: currentPage,
-        limit: limit,
-        search: searchQuery,
-        role: selectedRole,
-        status: selectedStatus,
-      };
-      const response = await api.get('/api/v1/admin/users', { params });
-      if (response.data.success) {
-        setUsers(response.data.users);
-        setTotalUsersCount(response.data.total);
-        setTotalPages(Math.ceil(response.data.total / limit));
-      }
-    } catch (err) {
-      console.error('Error fetching users:', err);
-      setError('Failed to fetch user data.');
-    } finally {
-      setLoading(false);
-    }
-  }, [currentPage, limit, searchQuery, selectedRole, selectedStatus]);
-
-  useEffect(() => {
-    fetchAdminStats();
-  }, [fetchAdminStats]);
-
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
-
-  const handleToggleUserStatus = async (userId, currentStatus) => {
-    try {
-      const newStatus = currentStatus === 'active' ? 'deactivated' : 'active';
-      await api.patch(`/api/v1/admin/users/${userId}/status`, { status: newStatus });
-      // Refetch users to update the table
-      fetchUsers();
-    } catch (err) {
-      console.error('Error toggling user status:', err);
-      setError('Failed to update user status.');
-    }
-  };
-
-  const handlePageChange = (newPage) => {
-    if (newPage > 0 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-    }
-  };
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    setCurrentPage(1); // Reset to first page on new search
-    fetchUsers();
-  };
-
-  if (error) {
-    return <div className="text-red-500 text-center py-8">{error}</div>;
-  }
-
-  if (!currentUser || currentUser.role !== 'admin') {
-    return <div className="text-red-500 text-center py-8">Access Denied. You must be an administrator to view this page.</div>;
-  }
+  const totalApplicants = allAdminJobs.reduce((count, job) => count + (job.applications?.length || 0), 0);
+  const activeJobs = allAdminJobs.filter((job) => !job.status || job.status === "active").length;
+  const latestJobs = allAdminJobs.slice(0, 5);
+  const averageApplicants = allAdminJobs.length ? Math.round(totalApplicants / allAdminJobs.length) : 0;
 
   return (
-    <div className="container mx-auto p-6 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold text-black-900 mb-8">Admin Dashboard</h1>
-
-      {/* Statistics Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        <StatCard
-          icon={<Users size={24} className="text-orange-600" />}
-          label="Total Candidates"
-          value={stats?.candidates || 0}
-          backgroundColor="bg-orange-50"
-        />
-        <StatCard
-          icon={<Users size={24} className="text-teal-600" />}
-          label="Total Recruiters"
-          value={stats?.recruiters || 0}
-          backgroundColor="bg-teal-50"
-        />
-        <StatCard
-          icon={<Briefcase size={24} className="text-gold-500" />}
-          label="Total Jobs Posted"
-          value={stats?.totalJobs || 0}
-          backgroundColor="bg-gold-50"
-        />
-        <StatCard
-          icon={<CheckCircle size={24} className="text-emerald-600" />}
-          label="Active Jobs"
-          value={stats?.activeJobs || 0}
-          backgroundColor="bg-emerald-50"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main User Management Area */}
-        <div className="lg:col-span-2 bg-white shadow-sm border border-black-100 rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-black-900">User Management</h2>
-            <span className="text-sm text-black-500 font-medium">{totalUsersCount} Total Users</span>
+    <div className="space-y-8 bg-white">
+      <section className="grid gap-6 border-b border-zinc-200 pb-8 lg:grid-cols-[1fr_320px]">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-zinc-500">Recruiter dashboard</p>
+          <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight text-zinc-950">
+            Move jobs from posted to hired with a sharper workflow.
+          </h1>
+          <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-500">
+            Welcome{user?.fullname ? `, ${user.fullname}` : ""}. Track job activity, keep company profiles ready, and review candidates from one focused workspace.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              to="/recruiter/jobs/create"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
+            >
+              <Plus size={16} />
+              Post job
+            </Link>
+            <Link
+              to="/recruiter/companies/create"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-zinc-300 px-5 py-3 text-sm font-semibold text-zinc-950 transition hover:border-zinc-950"
+            >
+              <Building2 size={16} />
+              Add company
+            </Link>
           </div>
-
-          {/* Filters and Search */}
-          <form onSubmit={handleSearchSubmit} className="flex flex-wrap gap-3 mb-6 items-center">
-            <div className="relative flex-grow">
-              <input
-                type="text"
-                placeholder="Search candidates or recruiters..."
-                className="pl-10 pr-4 py-2 bg-gray-50 border border-black-100 rounded-xl w-full focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-black-400" />
-            </div>
-            <select
-              className="py-2 px-3 bg-gray-50 border border-black-100 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 outline-none"
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-            >
-              <option value="">All Roles</option>
-              <option value="candidate">Candidate</option> {/* Changed from 'student' to 'candidate' */}
-              <option value="recruiter">Recruiter</option>
-            </select>
-            <button
-              type="submit"
-              className="bg-black-900 text-white px-4 py-2 rounded-xl hover:bg-black-800 transition-colors text-sm font-semibold"
-            >
-              Filter
-            </button>
-          </form>
-
-          {loading ? (
-            <div className="text-center py-12 flex flex-col items-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mb-2"></div>
-              <p className="text-black-500 text-sm">Syncing records...</p>
-            </div>
-          ) : (
-            /* ... rest of your table logic remains, but wrap in div with rounded-xl ... */
-            <div className="overflow-hidden rounded-xl border border-black-50">
-               {/* Table Content... */}
-            </div>
-          )}
         </div>
 
-        {/* Modern Activity Sidebar */}
-        <div className="space-y-6">
-          <div className="bg-white shadow-sm border border-black-100 rounded-2xl p-6">
-            <h3 className="text-lg font-bold text-black-900 mb-4 flex items-center gap-2">
-              <Activity size={18} className="text-orange-500" />
-              Recent Activity
-            </h3>
-            <div className="space-y-4">
-              {stats?.recentActivity?.length > 0 ? (
-                stats.recentActivity.map((log) => (
-                  <div key={log._id} className="flex gap-3 pb-3 border-b border-black-50 last:border-0">
-                    <div className="mt-1 h-2 w-2 rounded-full bg-orange-500 shrink-0" />
-                    <div>
-                      <p className="text-sm font-semibold text-black-800 uppercase tracking-tighter">{log.action.replace('_', ' ')}</p>
-                      <p className="text-xs text-black-500">By {log.adminId?.fullname || 'System'}</p>
-                      <p className="text-[10px] text-black-400 mt-1">{new Date(log.createdAt).toLocaleTimeString()}</p>
-                    </div>
+        <div className="rounded-2xl bg-zinc-950 p-6 text-white">
+          <p className="text-sm font-semibold text-zinc-400">Hiring pulse</p>
+          <p className="mt-4 text-5xl font-semibold tracking-tight">{averageApplicants}</p>
+          <p className="mt-2 text-sm text-zinc-400">average applicants per job</p>
+          <div className="mt-8 grid grid-cols-2 gap-3 text-sm">
+            <div className="rounded-xl bg-white/10 p-3">
+              <p className="text-zinc-400">Jobs</p>
+              <p className="mt-1 text-xl font-semibold">{allAdminJobs.length}</p>
+            </div>
+            <div className="rounded-xl bg-white/10 p-3">
+              <p className="text-zinc-400">Companies</p>
+              <p className="mt-1 text-xl font-semibold">{companies.length}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <StatTile icon={<Briefcase size={18} />} label="Total job posts" value={allAdminJobs.length} />
+        <StatTile icon={<CheckCircle2 size={18} />} label="Active jobs" value={activeJobs} tone="soft" />
+        <StatTile icon={<Users size={18} />} label="Total applicants" value={totalApplicants} tone="soft" />
+        <StatTile icon={<Building2 size={18} />} label="Company profiles" value={companies.length} tone="soft" />
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-[1fr_360px]">
+        <div className="rounded-2xl border border-zinc-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-4 border-b border-zinc-200 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-zinc-950">Recent job posts</h2>
+              <p className="text-sm text-zinc-500">Newest openings and applicant volume.</p>
+            </div>
+            <Link to="/recruiter/jobs" className="text-sm font-semibold text-zinc-950 underline-offset-4 hover:underline">
+              View all
+            </Link>
+          </div>
+
+          <div className="divide-y divide-zinc-100">
+            {latestJobs.length === 0 ? (
+              <div className="p-8 text-center">
+                <Briefcase className="mx-auto h-8 w-8 text-zinc-300" />
+                <p className="mt-3 font-semibold text-zinc-950">No jobs posted yet</p>
+                <p className="mt-1 text-sm text-zinc-500">Create your first job post to start collecting applicants.</p>
+              </div>
+            ) : (
+              latestJobs.map((job) => (
+                <div key={job._id} className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="font-semibold text-zinc-950">{job.title}</p>
+                    <p className="mt-1 text-sm text-zinc-500">{job.company?.name || "Company not set"} - {job.location}</p>
                   </div>
-                ))
-              ) : (
-                <p className="text-sm text-black-400 italic">No recent logs.</p>
-              )}
-            </div>
-            <button className="w-full mt-4 py-2 text-xs font-bold text-orange-600 hover:bg-orange-50 rounded-lg transition-all">
-              View All Audit Logs
-            </button>
+                  <div className="flex items-center gap-3">
+                    <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700">
+                      {job.applications?.length || 0} applicants
+                    </span>
+                    <Link
+                      to={`/recruiter/jobs/${job._id}/applicants`}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-zinc-950 text-white transition hover:bg-zinc-800"
+                      title="View applicants"
+                    >
+                      <ArrowUpRight size={16} />
+                    </Link>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
-      </div>
+
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
+            <div className="flex items-center gap-3">
+              <Search className="h-5 w-5 text-zinc-950" />
+              <h2 className="font-semibold text-zinc-950">Recommended next steps</h2>
+            </div>
+            <div className="mt-5 space-y-4 text-sm text-zinc-600">
+              <p>Keep salary ranges visible on every post to improve applicant quality.</p>
+              <p>Add focused skills to each job so the applicant match score has useful data.</p>
+              <p>Review pending applicants daily and move them to shortlisted or rejected quickly.</p>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <Clock3 className="h-5 w-5 text-zinc-950" />
+              <h2 className="font-semibold text-zinc-950">Fast actions</h2>
+            </div>
+            <div className="mt-5 grid gap-3">
+              <Link to="/recruiter/jobs/create" className="rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:border-zinc-950">
+                Publish another opening
+              </Link>
+              <Link to="/recruiter/companies" className="rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:border-zinc-950">
+                Manage company profiles
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

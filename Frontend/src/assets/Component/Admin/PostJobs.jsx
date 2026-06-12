@@ -1,85 +1,150 @@
 import "./PostJobs.css";
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import api from "../../../utils/api";
 import { JOB_API_END_POINT } from "../../../utils/constant";
+import useGetAllCompanies from "../Hooks/useGetAllCompanies";
 import {
-  Loader2,
+  ArrowLeft,
   Briefcase,
-  DollarSign,
-  MapPin,
-  Clock,
-  Award,
-  Users,
-  Building,
+  Building2,
   Check,
+  CircleDollarSign,
+  FileText,
+  Loader2,
+  MapPin,
+  Plus,
+  Sparkles,
+  Users,
 } from "lucide-react";
 
+const initialInput = {
+  title: "",
+  description: "",
+  requirements: "",
+  salary: "",
+  currency: "USD",
+  location: "",
+  jobType: "Full-Time",
+  experienceLevel: "Mid Level",
+  position: 1,
+  companyId: "",
+  companyName: "",
+  skills: "",
+};
+
+const jobTypes = ["Full-Time", "Part-Time", "Contract", "Remote", "Internship"];
+const experienceLevels = ["Entry Level", "Mid Level", "Senior", "Manager", "Executive"];
+const currencies = ["USD", "NGN", "EUR", "GBP"];
+
+const fieldClass = (hasError) =>
+  `w-full rounded-xl border bg-white px-4 py-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 focus:ring-4 focus:ring-zinc-950/10 ${
+    hasError ? "border-red-400" : "border-zinc-200"
+  }`;
+
+const splitList = (value) =>
+  value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
 const PostJobs = () => {
+  useGetAllCompanies();
+
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const navigate = useNavigate();
-  const { companies } = useSelector((store) => store.company);
-
-  const [input, setInput] = useState({
-    title: "",
-    description: "",
-    requirements: "",
-    salary: "",
-    location: "",
-    jobType: "",
-    experienceLevel: "",
-    position: "",
-    companyId: "",
-  });
-
+  const [input, setInput] = useState(initialInput);
   const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
+  const { id: jobId } = useParams();
+  const { companies = [] } = useSelector((store) => store.company);
+  const isEditing = Boolean(jobId);
 
   useEffect(() => {
-    setTimeout(() => {
-      document.querySelector(".form-container").classList.add("visible");
-    }, 100);
-  }, []);
+    const fetchJob = async () => {
+      if (!jobId) return;
+
+      try {
+        setLoading(true);
+        const res = await api.get(`${JOB_API_END_POINT}/get/${jobId}`);
+        if (res.data.success) {
+          const job = res.data.job;
+          setInput({
+            title: job.title || "",
+            description: job.description || "",
+            requirements: Array.isArray(job.requirements) ? job.requirements.join(", ") : "",
+            salary: job.salary || "",
+            currency: job.currency || "USD",
+            location: job.location || "",
+            jobType: job.jobType || "Full-Time",
+            experienceLevel: job.experience || "Mid Level",
+            position: job.position || 1,
+            companyId: job.company?._id || job.company || "",
+            companyName: "",
+            skills: Array.isArray(job.skills) ? job.skills.join(", ") : "",
+          });
+        }
+      } catch (error) {
+        setErrors({ submit: error.response?.data?.message || "Unable to load job" });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJob();
+  }, [jobId]);
 
   const validate = () => {
-    const newErrors = {};
-    if (!input.title) newErrors.title = "Job title is required";
-    if (!input.description) newErrors.description = "Description is required";
-    if (!input.requirements) newErrors.requirements = "Requirements are required";
-    if (!input.salary) newErrors.salary = "Salary information is required";
-    else if (!/^\d+([,-]\d+)?$/.test(input.salary.replace(/\s/g, "")))
-      newErrors.salary = "Salary must be a number or range (e.g., 80000 or 80000-100000)";
-    if (!input.location) newErrors.location = "Location is required";
-    if (!input.jobType) newErrors.jobType = "Job type is required";
-    if (!input.experienceLevel) newErrors.experienceLevel = "Experience level is required";
-    if (!input.position || input.position <= 0) newErrors.position = "Number of positions must be greater than 0";
-    if (!input.companyId) newErrors.companyId = "Company selection is required";
+    const nextErrors = {};
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    if (!input.title.trim()) nextErrors.title = "Job title is required";
+    if (!input.description.trim()) nextErrors.description = "Description is required";
+    if (splitList(input.requirements).length === 0) nextErrors.requirements = "Add at least one requirement";
+    if (!input.salary.trim()) nextErrors.salary = "Salary is required";
+    if (!input.location.trim()) nextErrors.location = "Location is required";
+    if (!input.position || Number(input.position) < 1) nextErrors.position = "Openings must be at least 1";
+    if (!input.companyId && !input.companyName.trim()) {
+      nextErrors.companyName = "Select a company or enter a new company name";
+    }
+    if (splitList(input.skills).length === 0) nextErrors.skills = "Add at least one skill";
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
   };
 
-  const changeEventHandler = (e) => {
-    const { name, value } = e.target;
-    setInput({ ...input, [name]: name === "position" ? (value ? parseInt(value, 10) : "") : value });
-    if (errors[name]) setErrors({ ...errors, [name]: null });
+  const changeEventHandler = (event) => {
+    const { name, value } = event.target;
+    setInput((prev) => ({
+      ...prev,
+      [name]: name === "position" ? value.replace(/[^\d]/g, "") : value,
+      ...(name === "companyId" && value ? { companyName: "" } : {}),
+      ...(name === "companyName" && value ? { companyId: "" } : {}),
+    }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
   };
 
-  const submitHandler = async (e) => {
-    e.preventDefault();
+  const submitHandler = async (event) => {
+    event.preventDefault();
     if (loading || !validate()) return;
+
+    const payload = {
+      ...input,
+      position: Number(input.position),
+      requirements: splitList(input.requirements),
+      skills: splitList(input.skills),
+      companyName: input.companyName.trim(),
+    };
 
     try {
       setLoading(true);
-      const res = await axios.post(`${JOB_API_END_POINT}/post`, input, {
-        headers: { "Content-Type": "application/json" },
-        withCredentials: true,
-      });
+      const res = isEditing
+        ? await api.patch(`${JOB_API_END_POINT}/${jobId}`, payload)
+        : await api.post(`${JOB_API_END_POINT}/post`, payload);
 
       if (res.data.success) {
         setSubmitted(true);
-        setTimeout(() => navigate("/admin/jobs"), 2000);
+        setTimeout(() => navigate("/recruiter/jobs"), 1300);
       }
     } catch (error) {
       setErrors({
@@ -90,37 +155,26 @@ const PostJobs = () => {
     }
   };
 
-  const jobTypes = ["Full-Time", "Part-Time", "Contract", "Remote", "Internship"];
-  const experienceLevels = ["Entry Level", "Mid Level", "Senior", "Manager", "Executive"];
-
   if (submitted) {
     return (
-      <div>
-        <div className="flex flex-col items-center justify-center min-h-[70vh] p-8">
-          <div className="bg-green-50 border-2 border-green-500 rounded-full p-4 mb-6 animate-bounce">
-            <Check size={48} className="text-green-500" />
+      <div className="min-h-[70vh] bg-white px-4 py-16">
+        <div className="mx-auto max-w-xl text-center">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-zinc-950 text-white">
+            <Check size={30} />
           </div>
-          <h2 className="text-2xl font-bold mb-2">Job Posted Successfully!</h2>
-          <p className="text-gray-600 mb-6">Redirecting to jobs dashboard...</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-zinc-950">{isEditing ? "Job updated" : "Job posted"}</h1>
+          <p className="mt-3 text-zinc-500">Redirecting to your job dashboard.</p>
           <button
+            type="button"
             onClick={() => {
               setSubmitted(false);
-              setInput({
-                title: "",
-                description: "",
-                requirements: "",
-                salary: "",
-                location: "",
-                jobType: "",
-                experience: "",
-                position: "",
-                companyId: "",
-              });
+              setInput(initialInput);
               setErrors({});
             }}
-            className="p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+            className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
           >
-            Post Another Job
+            <Plus size={16} />
+            Post another job
           </button>
         </div>
       </div>
@@ -128,230 +182,323 @@ const PostJobs = () => {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="container mx-auto py-8">
-        <div className="form-container">
-          <h1 className="text-3xl font-bold text-center mb-2">Post a New Job</h1>
-          <p className="text-gray-600 text-center mb-8">Fill out the form below to create a new job posting</p>
-          <form
-            onSubmit={submitHandler}
-            className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto border border-gray-200"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="col-span-2 md:col-span-1">
-                <label htmlFor="title" className="flex items-center mb-2">
-                  <Briefcase size={18} className="mr-2 text-blue-600" />
-                  <span className="font-medium text-gray-700">Job Title</span>
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  id="title"
-                  placeholder="e.g. Senior React Developer"
-                  value={input.title}
-                  onChange={changeEventHandler}
-                  className={`w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 transition-all ${
-                    errors.title ? "border-red-500" : "border-gray-300"
-                  }`}
-                />
-                {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+    <div className="bg-white">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mb-8 flex flex-col gap-5 border-b border-zinc-200 pb-8 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <Link
+              to="/recruiter/jobs"
+              className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-zinc-500 transition hover:text-zinc-950"
+            >
+              <ArrowLeft size={16} />
+              Job postings
+            </Link>
+          <h1 className="text-4xl font-semibold tracking-tight text-zinc-950">{isEditing ? "Edit job" : "Post a job"}</h1>
+            <p className="mt-3 max-w-2xl text-base text-zinc-500">
+              Create a clear role profile with compensation, skills, and screening signals for better applicants.
+            </p>
+          </div>
+          <div className="rounded-full bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-700">
+            Recruiter workspace
+          </div>
+        </div>
+
+        <form onSubmit={submitHandler} className="grid gap-8 lg:grid-cols-[1fr_320px]">
+          <div className="space-y-8">
+            <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-950 text-white">
+                  <Briefcase size={18} />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-zinc-950">Role details</h2>
+                  <p className="text-sm text-zinc-500">The information candidates scan first.</p>
+                </div>
               </div>
-              <div className="col-span-2 md:col-span-1">
-                <label htmlFor="salary" className="flex items-center mb-2">
-                  <DollarSign size={18} className="mr-2 text-green-600" />
-                  <span className="font-medium text-gray-700">Salary Range</span>
-                </label>
-                <input
-                  type="text"
-                  name="salary"
-                  id="salary"
-                  placeholder="e.g. 80000 or 80000-100000"
-                  value={input.salary}
-                  onChange={changeEventHandler}
-                  className={`w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 transition-all ${
-                    errors.salary ? "border-red-500" : "border-gray-300"
-                  }`}
-                />
-                {errors.salary && <p className="text-red-500 text-sm mt-1">{errors.salary}</p>}
-              </div>
-              <div className="col-span-2 md:col-span-1">
-                <label htmlFor="location" className="flex items-center mb-2">
-                  <MapPin size={18} className="mr-2 text-red-600" />
-                  <span className="font-medium text-gray-700">Location</span>
-                </label>
-                <input
-                  type="text"
-                  name="location"
-                  id="location"
-                  placeholder="e.g. San Francisco, CA"
-                  value={input.location}
-                  onChange={changeEventHandler}
-                  className={`w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 transition-all ${
-                    errors.location ? "border-red-500" : "border-gray-300"
-                  }`}
-                />
-                {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
-              </div>
-              <div className="col-span-2 md:col-span-1">
-                <label htmlFor="jobType" className="flex items-center mb-2">
-                  <Clock size={18} className="mr-2 text-purple-600" />
-                  <span className="font-medium text-gray-700">Job Type</span>
-                </label>
-                <select
-                  name="jobType"
-                  id="jobType"
-                  value={input.jobType}
-                  onChange={changeEventHandler}
-                  className={`w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 transition-all ${
-                    errors.jobType ? "border-red-500" : "border-gray-300"
-                  }`}
-                >
-                  <option value="">Select Job Type</option>
-                  {jobTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-                {errors.jobType && <p className="text-red-500 text-sm mt-1">{errors.jobType}</p>}
-              </div>
-              <div className="col-span-2 md:col-span-1">
-                <label htmlFor="experienceLevel" className="flex items-center mb-2">
-                  <Award size={18} className="mr-2 text-yellow-600" />
-                  <span className="font-medium text-gray-700">Experience Level</span>
-                </label>
-                <select
-                  name="experienceLevel"
-                  id="experienceLevel"
-                  value={input.experienceLevel}
-                  onChange={changeEventHandler}
-                  className={`w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 transition-all ${
-                    errors.experienceLevel ? "border-red-500" : "border-gray-300"
-                  }`}
-                >
-                  <option value="">Select Experience Level</option>
-                  {experienceLevels.map((level) => (
-                    <option key={level} value={level}>
-                      {level}
-                    </option>
-                  ))}
-                </select>
-                {errors.experienceLevel && <p className="text-red-500 text-sm mt-1">{errors.experienceLevel}</p>}
-              </div>
-              <div className="col-span-2 md:col-span-1">
-                <label htmlFor="position" className="flex items-center mb-2">
-                  <Users size={18} className="mr-2 text-indigo-600" />
-                  <span className="font-medium text-gray-700">Number of Positions</span>
-                </label>
-                <input
-                  type="number"
-                  name="position"
-                  id="position"
-                  placeholder="e.g. 2"
-                  min="1"
-                  value={input.position}
-                  onChange={changeEventHandler}
-                  className={`w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 transition-all ${
-                    errors.position ? "border-red-500" : "border-gray-300"
-                  }`}
-                />
-                {errors.position && <p className="text-red-500 text-sm mt-1">{errors.position}</p>}
-              </div>
-              <div className="col-span-2 md:col-span-1">
-                <label htmlFor="company" className="flex items-center mb-2">
-                  <Building size={18} className="mr-2 text-gray-600" />
-                  <span className="font-medium text-gray-700">Company</span>
-                </label>
-                {companies.length > 0 ? (
+
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div className="md:col-span-2">
+                  <label htmlFor="title" className="mb-2 block text-sm font-semibold text-zinc-800">
+                    Job title
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    id="title"
+                    placeholder="Senior Frontend Engineer"
+                    value={input.title}
+                    onChange={changeEventHandler}
+                    className={fieldClass(errors.title)}
+                  />
+                  {errors.title && <p className="mt-2 text-sm text-red-600">{errors.title}</p>}
+                </div>
+
+                <div>
+                  <label htmlFor="jobType" className="mb-2 block text-sm font-semibold text-zinc-800">
+                    Job type
+                  </label>
+                  <select name="jobType" id="jobType" value={input.jobType} onChange={changeEventHandler} className={fieldClass(errors.jobType)}>
+                    {jobTypes.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="experienceLevel" className="mb-2 block text-sm font-semibold text-zinc-800">
+                    Experience level
+                  </label>
                   <select
-                    id="company"
-                    onChange={(e) => {
-                      setInput({ ...input, companyId: e.target.value });
-                      if (errors.companyId) setErrors({ ...errors, companyId: null });
-                    }}
-                    className={`w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 transition-all ${
-                      errors.companyId ? "border-red-500" : "border-gray-300"
-                    }`}
+                    name="experienceLevel"
+                    id="experienceLevel"
+                    value={input.experienceLevel}
+                    onChange={changeEventHandler}
+                    className={fieldClass(errors.experienceLevel)}
                   >
-                    <option value="">Select Company</option>
+                    {experienceLevels.map((level) => (
+                      <option key={level} value={level}>
+                        {level}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="location" className="mb-2 block text-sm font-semibold text-zinc-800">
+                    Location
+                  </label>
+                  <div className="relative">
+                    <MapPin className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                    <input
+                      type="text"
+                      name="location"
+                      id="location"
+                      placeholder="Remote, Lagos, London"
+                      value={input.location}
+                      onChange={changeEventHandler}
+                      className={`${fieldClass(errors.location)} pl-11`}
+                    />
+                  </div>
+                  {errors.location && <p className="mt-2 text-sm text-red-600">{errors.location}</p>}
+                </div>
+
+                <div>
+                  <label htmlFor="position" className="mb-2 block text-sm font-semibold text-zinc-800">
+                    Open positions
+                  </label>
+                  <div className="relative">
+                    <Users className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      name="position"
+                      id="position"
+                      value={input.position}
+                      onChange={changeEventHandler}
+                      className={`${fieldClass(errors.position)} pl-11`}
+                    />
+                  </div>
+                  {errors.position && <p className="mt-2 text-sm text-red-600">{errors.position}</p>}
+                </div>
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-950 text-white">
+                  <Building2 size={18} />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-zinc-950">Company</h2>
+                  <p className="text-sm text-zinc-500">Use an existing company or create one as you post.</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div>
+                  <label htmlFor="companyId" className="mb-2 block text-sm font-semibold text-zinc-800">
+                    Existing company
+                  </label>
+                  <select id="companyId" name="companyId" value={input.companyId} onChange={changeEventHandler} className={fieldClass(errors.companyName)}>
+                    <option value="">Select company</option>
                     {companies.map((company) => (
                       <option value={company._id} key={company._id}>
                         {company.name}
                       </option>
                     ))}
                   </select>
-                ) : (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-600">
-                    Please register a company first
-                  </div>
-                )}
-                {errors.companyId && <p className="text-red-500 text-sm mt-1">{errors.companyId}</p>}
+                </div>
+
+                <div>
+                  <label htmlFor="companyName" className="mb-2 block text-sm font-semibold text-zinc-800">
+                    New company name
+                  </label>
+                  <input
+                    type="text"
+                    name="companyName"
+                    id="companyName"
+                    placeholder="Create a company while posting"
+                    value={input.companyName}
+                    onChange={changeEventHandler}
+                    className={fieldClass(errors.companyName)}
+                  />
+                  {errors.companyName && <p className="mt-2 text-sm text-red-600">{errors.companyName}</p>}
+                </div>
               </div>
-              <div className="col-span-2">
-                <label htmlFor="description" className="block font-medium text-gray-700 mb-2">
-                  Job Description
-                </label>
-                <textarea
-                  name="description"
-                  id="description"
-                  rows="4"
-                  placeholder="Describe the responsibilities and expectations for this role"
-                  value={input.description}
-                  onChange={changeEventHandler}
-                  className={`w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 transition-all ${
-                    errors.description ? "border-red-500" : "border-gray-300"
-                  }`}
-                />
-                {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+            </section>
+
+            <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-950 text-white">
+                  <FileText size={18} />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-zinc-950">Candidate brief</h2>
+                  <p className="text-sm text-zinc-500">Write the role in a way strong candidates can qualify quickly.</p>
+                </div>
               </div>
-              <div className="col-span-2">
-                <label htmlFor="requirements" className="block font-medium text-gray-700 mb-2">
-                  Requirements
-                </label>
-                <textarea
-                  name="requirements"
-                  id="requirements"
-                  rows="4"
-                  placeholder="List required skills, education, and experience (separate by commas, e.g., JavaScript, React, 3+ years experience)"
-                  value={input.requirements}
-                  onChange={changeEventHandler}
-                  className={`w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 transition-all ${
-                    errors.requirements ? "border-red-500" : "border-gray-300"
-                  }`}
-                />
-                {errors.requirements && <p className="text-red-500 text-sm mt-1">{errors.requirements}</p>}
+
+              <div className="space-y-5">
+                <div>
+                  <label htmlFor="description" className="mb-2 block text-sm font-semibold text-zinc-800">
+                    Job description
+                  </label>
+                  <textarea
+                    name="description"
+                    id="description"
+                    rows="5"
+                    placeholder="Describe responsibilities, team context, and what success looks like."
+                    value={input.description}
+                    onChange={changeEventHandler}
+                    className={fieldClass(errors.description)}
+                  />
+                  {errors.description && <p className="mt-2 text-sm text-red-600">{errors.description}</p>}
+                </div>
+
+                <div>
+                  <label htmlFor="requirements" className="mb-2 block text-sm font-semibold text-zinc-800">
+                    Requirements
+                  </label>
+                  <textarea
+                    name="requirements"
+                    id="requirements"
+                    rows="4"
+                    placeholder="React, TypeScript, REST APIs, 4+ years experience"
+                    value={input.requirements}
+                    onChange={changeEventHandler}
+                    className={fieldClass(errors.requirements)}
+                  />
+                  {errors.requirements && <p className="mt-2 text-sm text-red-600">{errors.requirements}</p>}
+                </div>
+
+                <div>
+                  <label htmlFor="skills" className="mb-2 block text-sm font-semibold text-zinc-800">
+                    Skills for matching
+                  </label>
+                  <input
+                    type="text"
+                    name="skills"
+                    id="skills"
+                    placeholder="React, Node.js, MongoDB"
+                    value={input.skills}
+                    onChange={changeEventHandler}
+                    className={fieldClass(errors.skills)}
+                  />
+                  {errors.skills && <p className="mt-2 text-sm text-red-600">{errors.skills}</p>}
+                </div>
               </div>
-            </div>
+            </section>
+          </div>
+
+          <aside className="lg:sticky lg:top-6 lg:self-start">
+            <section className="rounded-2xl border border-zinc-200 bg-zinc-950 p-5 text-white shadow-sm sm:p-6">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-zinc-950">
+                  <CircleDollarSign size={18} />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold">Compensation</h2>
+                  <p className="text-sm text-zinc-400">Be direct. Better salary clarity means better applicants.</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="currency" className="mb-2 block text-sm font-semibold text-zinc-200">
+                    Currency
+                  </label>
+                  <select
+                    name="currency"
+                    id="currency"
+                    value={input.currency}
+                    onChange={changeEventHandler}
+                    className="w-full rounded-xl border border-white/10 bg-white px-4 py-3 text-sm text-zinc-950 outline-none focus:ring-4 focus:ring-white/20"
+                  >
+                    {currencies.map((currency) => (
+                      <option key={currency} value={currency}>
+                        {currency}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="salary" className="mb-2 block text-sm font-semibold text-zinc-200">
+                    Salary range
+                  </label>
+                  <input
+                    type="text"
+                    name="salary"
+                    id="salary"
+                    placeholder="80000-100000"
+                    value={input.salary}
+                    onChange={changeEventHandler}
+                    className="w-full rounded-xl border border-white/10 bg-white px-4 py-3 text-sm text-zinc-950 outline-none focus:ring-4 focus:ring-white/20"
+                  />
+                  {errors.salary && <p className="mt-2 text-sm text-red-300">{errors.salary}</p>}
+                </div>
+              </div>
+            </section>
+
+            <section className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-5 sm:p-6">
+              <div className="flex items-start gap-3">
+                <Sparkles className="mt-1 h-5 w-5 text-zinc-950" />
+                <div>
+                  <h3 className="font-semibold text-zinc-950">Posting quality</h3>
+                  <p className="mt-2 text-sm leading-6 text-zinc-600">
+                    Add 3-6 skills and a concrete salary range to improve matching in the applicant table.
+                  </p>
+                </div>
+              </div>
+            </section>
+
             {errors.submit && (
-              <div className="mt-6 p-4 bg-red-50 border border-red-300 rounded-md text-red-600">
+              <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
                 {errors.submit}
               </div>
             )}
-            <div className="mt-8">
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-zinc-950 px-5 py-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
+            >
               {loading ? (
-                <button
-                  disabled
-                  className="w-full p-4 bg-gray-300 text-gray-600 rounded-md flex items-center justify-center"
-                >
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Processing...
-                </button>
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Posting job
+                </>
               ) : (
-                <button
-                  type="submit"
-                  className="w-full p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-300 transform hover:scale-[1.01] active:scale-[0.99] font-medium text-lg"
-                >
-                  Post New Job
-                </button>
+                <>
+              <Plus size={16} />
+              {isEditing ? "Save changes" : "Publish job"}
+                </>
               )}
-              {companies.length === 0 && (
-                <p className="text-red-600 text-center mt-4">
-                  You need to register a company before posting jobs
-                </p>
-              )}
-            </div>
-          </form>
-        </div>
+            </button>
+          </aside>
+        </form>
       </div>
     </div>
   );

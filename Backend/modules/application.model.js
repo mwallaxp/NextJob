@@ -1,4 +1,3 @@
-import express, { application } from "express"
 import mongoose from "mongoose";
 
 const applicationSchema = new mongoose.Schema({
@@ -9,13 +8,40 @@ const applicationSchema = new mongoose.Schema({
     },
      applicant:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:"user",
+        ref:"User",
         required:true
     },
     status:{
         type:String,
         enum:["pending", "accepted","rejected"],
         default:"pending"
+    },
+    interviewStage: {
+        type: String,
+        enum: ["applied", "screening", "interview", "offer", "hired", "rejected"],
+        default: "applied"
+    },
+    recruiterComment: {
+        type: String,
+        default: ""
+    },
+    notes: [{
+        text: {
+            type: String,
+            required: true
+        },
+        createdBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now
+        }
+    }],
+    reviewedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
     }
 },{timestamps:true}
 );

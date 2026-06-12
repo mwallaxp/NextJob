@@ -23,7 +23,7 @@ export const isAuthenticate = (req, res, next) => {
       success: false,
     })
     }
-    req.id = decoded.userId;
+    req.id = decoded.userId || decoded.id;
     req.role = decoded.role;
     next();
   }

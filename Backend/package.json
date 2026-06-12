@@ -15,7 +15,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "NODE_ENV=test node --test tests/**/*.test.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -39,5 +39,9 @@
     "socket.io": "^4.7.2",
     "stripe": "^22.2.0",
     "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^10.1.4",
+    "supertest": "^7.0.0"
   }
 }

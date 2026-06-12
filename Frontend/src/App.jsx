@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { Navigate, createBrowserRouter, RouterProvider } from "react-router-dom";
 import Signup from "./assets/Component/shared/Signup";
 import { Home } from "./assets/Component/Auth/Home";
 import Login from "./assets/Component/Auth/login.jsx";
@@ -23,6 +23,7 @@ import Applicants from "./assets/Component/Admin/Applicants.jsx";
 import PostJobs from "./assets/Component/Admin/PostJobs.jsx";
 import AuditLogs from "./assets/Component/Admin/AuditLogs.jsx";
 import AdminDashboard from "./assets/Component/Admin/AdminDashboard.jsx";
+import SystemAdminDashboard from "./assets/Component/Admin/SystemAdminDashboard.jsx";
 import ProtectedRoute from "./assets/Component/Admin/ProtectRoute.jsx";
 import AdminLayout from "./assets/Component/Admin/AdminLayout.jsx";
 import Layout from "./assets/Component/shared/Layout";
@@ -98,8 +99,8 @@ const appRouter = createBrowserRouter([
         element: <CompanyPage />,
       },
       {
-        path: "admin",
-        element: <ProtectedRoute><AdminLayout /></ProtectedRoute>,
+        path: "recruiter",
+        element: <ProtectedRoute allowedRoles={["recruiter"]}><AdminLayout /></ProtectedRoute>,
         children: [
           {
             index: true,
@@ -126,14 +127,26 @@ const appRouter = createBrowserRouter([
             element: <PostJobs />,
           },
           {
+            path: "jobs/:id/edit",
+            element: <PostJobs />,
+          },
+          {
             path: "jobs/:id/applicants",
             element: <Applicants />,
           },
-          {
-            path: "logs",
-            element: <AuditLogs />,
-          },
         ],
+      },
+      {
+        path: "admin",
+        element: <ProtectedRoute allowedRoles={["admin"]}><SystemAdminDashboard /></ProtectedRoute>,
+      },
+      {
+        path: "admin/logs",
+        element: <ProtectedRoute allowedRoles={["admin"]}><AuditLogs /></ProtectedRoute>,
+      },
+      {
+        path: "admin/*",
+        element: <Navigate to="/admin" replace />,
       },
       {
         path: "*",
