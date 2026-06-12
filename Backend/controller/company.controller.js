@@ -31,18 +31,12 @@ export const registerCompany = async (req, res) => {
       company,
       success: true,
     });
-  } catch (error) {
-    console.error("Error registering company:", error);
-    return res
-      .status(500)
-      .json({ message: "Internal Server Error", success: false });
-  }
-};
+});
 
-export const getCompany = async (req, res) => {
-  try {
+export const getCompany = catchAsync(async (req, res, next) => {
     const userId = req.id;
-    const companies = await Company.find({ userid: userId });
+    // Populate the company's user to ensure it's linked to the recruiter
+    const companies = await Company.find({ userid: userId }).populate('userid', 'fullname email');
 
     if (!companies || companies.length === 0) {
       return res
@@ -56,18 +50,12 @@ export const getCompany = async (req, res) => {
       companies,
       success: true,
     });
-  } catch (error) {
-    console.error("Error fetching companies:", error);
-    return res
-      .status(500)
-      .json({ message: "Internal Server Error", success: false });
-  }
-};
+});
 
-export const getCompanyById = async (req, res) => {
-  try {
+export const getCompanyById = catchAsync(async (req, res, next) => {
     const companyId = req.params.id;
-    const company = await Company.findById(companyId);
+    // Populate the company's user to ensure it's linked to the recruiter
+    const company = await Company.findById(companyId).populate('userid', 'fullname email');
 
     if (!company) {
       return res
@@ -84,18 +72,12 @@ export const getCompanyById = async (req, res) => {
       company,
       success: true,
     });
-  } catch (error) {
-    console.error("Error fetching company by ID:", error);
-    return res
-      .status(500)
-      .json({ message: "Internal Server Error", success: false });
-  }
-};
+});
 
-export const updateCompany = async (req, res) => {
-  try {
+export const updateCompany = catchAsync(async (req, res, next) => {
     const { name, description, website, location } = req.body;
 
+    // Prepare update data, including logo if a file was uploaded
     const updateData = { name, description, website, location };
     if (req.fileUrl) updateData.logo = req.fileUrl;
 
@@ -106,6 +88,7 @@ export const updateCompany = async (req, res) => {
         .status(404)
         .json({ message: "Company not found", success: false });
     }
+    // Ensure only the owner or admin can update the company
     if (req.role === "recruiter" && !canAccessCompany(existingCompany, req)) {
       return res
         .status(403)
@@ -126,10 +109,4 @@ export const updateCompany = async (req, res) => {
       company,
       success: true,
     });
-  } catch (error) {
-    console.error("Error updating company:", error);
-    return res
-      .status(500)
-      .json({ message: "Internal Server Error", success: false });
-  }
-};
+});

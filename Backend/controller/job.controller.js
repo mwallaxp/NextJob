@@ -71,43 +71,39 @@ const findOwnedJob = async (jobId, recruiterId) => {
     return job;
 };
 
-export const postJob = catchAsync(async (req, res, next) => { // Wrapped in catchAsync
-    try {
-        const {title, description, salary, location, jobType, experienceLevel, position, companyId, companyName, currency = "USD" }=req.body
-        const payload = buildJobPayload(req.body);
-        const userid=req.id
-        if(req.role !== "recruiter"){
-            return next(new AppError("Only recruiters can post jobs", 403));
-        }
-        if(!title|| !description|| payload.requirements.length === 0|| !salary|| !location|| !jobType||!experienceLevel|| !position|| (!companyId && !companyName)|| !currency || payload.skills.length === 0){
-            return next(new AppError("Complete the missing field", 400)); // Using AppError
-        };
+export const postJob = catchAsync(async (req, res, next) => {
+    const { title, description, salary, location, jobType, experienceLevel, position, companyId, companyName, currency = "USD" } = req.body;
+    const payload = buildJobPayload(req.body);
+    const userid = req.id;
 
-        let company = companyId;
-        if (!company && companyName) {
-            const createdCompany = await Company.findOneAndUpdate(
-                { name: companyName.trim(), userid },
-                { $setOnInsert: { name: companyName.trim(), userid } },
-                { new: true, upsert: true }
-            );
-            company = createdCompany._id;
-        } else {
-            await ensureRecruiterOwnsCompany(company, userid);
-        }
-
-        const job = await Job.create( {
-            ...payload,
-            company,
-            created_by: userid,
-        });
-        return res.status(201).json({message:"Job posted successfully", success:true, job})
-    } catch (error) {
-        console.log(error)
-        return next(new AppError("Internal server error", 500)); // Using AppError
+    if (req.role !== "recruiter") {
+        return next(new AppError("Only recruiters can post jobs", 403));
     }
+    if (!title || !description || payload.requirements.length === 0 || !salary || !location || !jobType || !experienceLevel || !position || (!companyId && !companyName) || !currency || payload.skills.length === 0) {
+        return next(new AppError("Complete the missing field", 400));
+    }
+
+    let company = companyId;
+    if (!company && companyName) {
+        const createdCompany = await Company.findOneAndUpdate(
+            { name: companyName.trim(), userid },
+            { $setOnInsert: { name: companyName.trim(), userid } },
+            { new: true, upsert: true }
+        );
+        company = createdCompany._id;
+    } else if (company) { // Only ensure ownership if companyId is provided
+        await ensureRecruiterOwnsCompany(company, userid);
+    }
+
+    const job = await Job.create({
+        ...payload,
+        company,
+        created_by: userid,
+    });
+    res.status(201).json({ message: "Job posted successfully", success: true, job });
 });
-export const getAllJobs = async (req, res) => {
-    try {
+
+export const getAllJobs = catchAsync(async (req, res, next) => {
         // Safely access keyword from query
         const keyword = req.query.keyword || "";
         // Define MongoDB query
@@ -133,18 +129,12 @@ export const getAllJobs = async (req, res) => {
         return res.status(200).json({
             jobs,
             success: true,
-        });
-    } catch (error) {
-        console.error("Error fetching jobs:", error);
-        return res.status(500).json({ message: "Internal Server Error", success: false });
-    }
-};
+        }); 
+});
 
-export const getJobById = async (req, res)=>{
-    try {
-        const jobid= req.params.id;
-        // const job = await Job.findById(jobid)
-        if (!mongoose.Types.ObjectId.isValid(jobid)) {
+export const getJobById = catchAsync(async (req, res, next) => {
+        const jobId = req.params.id;
+        if (!mongoose.Types.ObjectId.isValid(jobId)) {
             return res.status(400).json({
                 success: false,
                 message: "Invalid Job ID format"
@@ -152,7 +142,7 @@ export const getJobById = async (req, res)=>{
         }
     
         const job = await Job.findById(jobid)
-            .populate('company')
+            .populate('company', 'name website logo') // Select specific fields for company
             .populate({
                 path:"applications",
                 populate: { path: "applicant", select: "fullname email phonenumber profile" }
@@ -162,15 +152,10 @@ export const getJobById = async (req, res)=>{
             return res.status(404).json({ message: "Job not found", success: false });
         }
         return res.status(200).json({ job, success: true });
-    } catch (error) {
-        console.error("Error fetching job:", error);
-        return res.status(500).json({ message: "Internal Server Error", success: false });
-    }
+});
 
-}
-//admin kitten jobs creation 
-export const getAdminJobs = async (req, res)=>{
-    try {
+//admin recruiter jobs creation 
+export const getAdminJobs = catchAsync(async (req, res, next) => {
         const AdminId=req.id;
         const {
             page = 1,
@@ -210,12 +195,8 @@ export const getAdminJobs = async (req, res)=>{
             currentPage: pageNumber,
             totalPages: Math.ceil(total / limitNumber),
             success:true
-        })
-    } catch (error) {
-        console.log(error)
-        return res.status(500).json({ message: "Internal Server Error", success: false });
-    }
-}
+        });
+});
 
 export const updateJob = catchAsync(async (req, res, next) => {
     if (req.role !== "recruiter") {

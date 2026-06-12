@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
-import User from "../modules/user.module.js";
+import User from "../modules/user.model.js"; // Updated import
+import catchAsync from "../catchAsync.js"; // Added catchAsync import
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import cloudinary from "../utility/Cloudinary.js";
@@ -18,8 +19,7 @@ const getCookieOptions = () => ({
   secure: process.env.NODE_ENV === "production",
   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
 });
-export const registration = async (req, res) => {
-  try {
+export const registration = catchAsync(async (req, res, next) => {
     // Assuming validation middleware has already processed req.body
     // and populated req.validatedBody
     const { fullname, phonenumber, email, password, role } = req.validatedBody || req.body;
@@ -74,22 +74,15 @@ export const registration = async (req, res) => {
       },
       token,
     });
-  } catch (error) {
-    console.error("Registration error:", error);
-    return res.status(500).json({
-      message: "Server error during registration",
-      success: false,
-    });
-  }
-};
+});
+
 /**
  * User login handler
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  * @returns {Object} - JSON response
  */
-export const login = async (req, res) => {
-  try {
+export const login = catchAsync(async (req, res, next) => {
     // Assuming validation middleware has already processed req.body
     // and populated req.validatedBody
     const { email, password, role } = req.validatedBody || req.body;
@@ -200,17 +193,9 @@ export const getCurrentUser = async (req, res) => {
       success: true,
       user,
     });
-  } catch (error) {
-    console.error("Get current user error:", error);
-    return res.status(500).json({
-      message: "Server error",
-      success: false,
-    });
-  }
-};
+});
 
-export const forgotPassword = async (req, res) => {
-  try {
+export const forgotPassword = catchAsync(async (req, res, next) => {
     // Assuming validation middleware has already processed req.body
     // and populated req.validatedBody
     const { email } = req.validatedBody || req.body;
@@ -254,18 +239,12 @@ export const forgotPassword = async (req, res) => {
       success: true,
       resetUrl,
     });
-  } catch (error) {
-    console.error("Forgot password error:", error);
-    return res.status(500).json({
-      message: "Server error during password reset request",
-      success: false,
-    });
-  }
-};
+});
 
-export const resetPassword = async (req, res) => {
-  try {
+export const resetPassword = catchAsync(async (req, res, next) => {
     const { token } = req.params;
+    // Ensure token is not empty or malformed
+    if (!token) return next(new AppError("Reset token is missing.", 400));
     // Assuming validation middleware has already processed req.body
     // and populated req.validatedBody
     const { password } = req.validatedBody || req.body;
@@ -293,14 +272,8 @@ export const resetPassword = async (req, res) => {
       message: "Password reset successfully. Please log in with your new password.",
       success: true,
     });
-  } catch (error) {
-    console.error("Reset password error:", error);
-    return res.status(500).json({
-      message: "Server error during password reset",
-      success: false,
-    });
-  }
-};
+});
+
 
 /**
  * Update user profile
@@ -308,8 +281,7 @@ export const resetPassword = async (req, res) => {
  * @param {Object} res - Express response object
  * @returns {Object} - JSON response
  */
-export const updateProfile = async (req, res) => {
-  try {
+export const updateProfile = catchAsync(async (req, res, next) => {
     // Assuming validation middleware has already processed req.body
     // and populated req.validatedBody
     const { fullname, email, phonenumber, bio, skills } = req.validatedBody || req.body;
@@ -363,11 +335,4 @@ export const updateProfile = async (req, res) => {
       success: true,
       user: updatedUser,
     });
-  } catch (error) {
-    console.error("Update profile error:", error);
-    return res.status(500).json({
-      message: "Server error during profile update",
-      success: false,
-    });
-  }
-};
+});
