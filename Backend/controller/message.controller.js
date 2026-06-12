@@ -3,7 +3,7 @@ import catchAsync from "../catchAsync.js";
 import AppError from "../AppError.js";
 
 // Get or create conversation
-export const getOrCreateConversation = catchAsync(async (req, res) => {
+export const getOrCreateConversation = catchAsync(async (req, res, next) => {
     const { userId, otherUserId } = req.body;
 
     if (!userId || !otherUserId) {
@@ -29,7 +29,7 @@ export const getOrCreateConversation = catchAsync(async (req, res) => {
 });
 
 // Send message
-export const sendMessage = catchAsync(async (req, res) => {
+export const sendMessage = catchAsync(async (req, res, next) => {
     const { conversationId, senderId, receiverId, content, attachments } = req.body;
 
     if (!content && (!attachments || attachments.length === 0)) {
@@ -56,7 +56,7 @@ export const sendMessage = catchAsync(async (req, res) => {
 });
 
 // Get conversation messages
-export const getConversationMessages = catchAsync(async (req, res) => {
+export const getConversationMessages = catchAsync(async (req, res, next) => {
     const { conversationId } = req.params;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
@@ -84,7 +84,7 @@ export const getConversationMessages = catchAsync(async (req, res) => {
 });
 
 // Get user conversations
-export const getUserConversations = catchAsync(async (req, res) => {
+export const getUserConversations = catchAsync(async (req, res, next) => {
     const { userId } = req.params;
 
     const conversations = await Conversation.find({
@@ -102,7 +102,7 @@ export const getUserConversations = catchAsync(async (req, res) => {
 });
 
 // Mark message as read
-export const markMessageAsRead = catchAsync(async (req, res) => {
+export const markMessageAsRead = catchAsync(async (req, res, next) => {
     const { messageId } = req.params;
 
     const message = await Message.findByIdAndUpdate(
@@ -121,7 +121,7 @@ export const markMessageAsRead = catchAsync(async (req, res) => {
 });
 
 // Delete message
-export const deleteMessage = catchAsync(async (req, res) => {
+export const deleteMessage = catchAsync(async (req, res, next) => {
     const { messageId } = req.params;
 
     await Message.findByIdAndUpdate(messageId, {

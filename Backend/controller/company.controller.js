@@ -1,24 +1,21 @@
 import Company from "../modules/company.model.js";
+import catchAsync from "../catchAsync.js";
+import AppError from "../AppError.js";
 
 const canAccessCompany = (company, req) => {
   return req.role === "admin" || String(company.userid) === String(req.id);
 };
 
-export const registerCompany = async (req, res) => {
-  try {
+export const registerCompany = catchAsync(async (req, res, next) => {
     const companyName = req.body.companyName || req.body.name;
 
     if (!companyName) {
-      return res
-        .status(400)
-        .json({ message: "Company name is required", success: false });
+      return next(new AppError("Company name is required", 400));
     }
 
     let company = await Company.findOne({ name: companyName });
     if (company) {
-      return res
-        .status(400)
-        .json({ message: "The company already exists", success: false });
+      return next(new AppError("The company already exists", 400));
     }
 
     company = await Company.create({
@@ -39,9 +36,7 @@ export const getCompany = catchAsync(async (req, res, next) => {
     const companies = await Company.find({ userid: userId }).populate('userid', 'fullname email');
 
     if (!companies || companies.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No companies found", success: false });
+      return next(new AppError("No companies found", 404));
     }
 
     console.log("Fetched Companies:", companies);
@@ -58,14 +53,10 @@ export const getCompanyById = catchAsync(async (req, res, next) => {
     const company = await Company.findById(companyId).populate('userid', 'fullname email');
 
     if (!company) {
-      return res
-        .status(404)
-        .json({ message: "Company not found", success: false });
+      return next(new AppError("Company not found", 404));
     }
     if (req.role === "recruiter" && !canAccessCompany(company, req)) {
-      return res
-        .status(403)
-        .json({ message: "You can only access companies owned by your account", success: false });
+      return next(new AppError("You can only access companies owned by your account", 403));
     }
 
     return res.status(200).json({
@@ -84,15 +75,11 @@ export const updateCompany = catchAsync(async (req, res, next) => {
     const existingCompany = await Company.findById(req.params.id);
 
     if (!existingCompany) {
-      return res
-        .status(404)
-        .json({ message: "Company not found", success: false });
+      return next(new AppError("Company not found", 404));
     }
     // Ensure only the owner or admin can update the company
     if (req.role === "recruiter" && !canAccessCompany(existingCompany, req)) {
-      return res
-        .status(403)
-        .json({ message: "You can only update companies owned by your account", success: false });
+      return next(new AppError("You can only update companies owned by your account", 403));
     }
 
     const company = await Company.findByIdAndUpdate(

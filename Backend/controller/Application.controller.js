@@ -118,5 +118,15 @@ export const updateStatus = catchAsync(async (req, res, next) => {
   application.status = status.toLowerCase();
   await application.save();
 
+  // Trigger real-time notification via Socket.io
+  const io = req.app.get("io");
+  if (io) {
+    io.to(`user_${application.applicant}`).emit("notification", {
+      type: "APPLICATION_STATUS_UPDATE",
+      message: `Your application status has been updated to ${status}.`,
+      applicationId: application._id
+    });
+  }
+
   res.status(200).json({ success: true, message: "Status updated successfully" });
 });

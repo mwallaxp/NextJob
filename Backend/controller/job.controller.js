@@ -141,7 +141,7 @@ export const getJobById = catchAsync(async (req, res, next) => {
             });
         }
     
-        const job = await Job.findById(jobid)
+        const job = await Job.findById(jobId)
             .populate('company', 'name website logo') // Select specific fields for company
             .populate({
                 path:"applications",

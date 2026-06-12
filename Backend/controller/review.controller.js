@@ -3,7 +3,7 @@ import catchAsync from "../catchAsync.js";
 import AppError from "../AppError.js";
 
 // Create review
-export const createReview = catchAsync(async (req, res) => {
+export const createReview = catchAsync(async (req, res, next) => {
     const { jobId, fromUserId, toUserId, rating, title, comment, reviewType, tags } = req.body;
 
     if (!rating || rating < 1 || rating > 5) {
@@ -43,7 +43,7 @@ export const createReview = catchAsync(async (req, res) => {
 });
 
 // Get user reviews
-export const getUserReviews = catchAsync(async (req, res) => {
+export const getUserReviews = catchAsync(async (req, res, next) => {
     const { userId } = req.params;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -85,7 +85,7 @@ export const getUserReviews = catchAsync(async (req, res) => {
 });
 
 // Get reviews by user (reviews they've written)
-export const getReviewsByUser = catchAsync(async (req, res) => {
+export const getReviewsByUser = catchAsync(async (req, res, next) => {
     const { userId } = req.params;
 
     const reviews = await Review.find({
@@ -102,7 +102,7 @@ export const getReviewsByUser = catchAsync(async (req, res) => {
 });
 
 // Update review
-export const updateReview = catchAsync(async (req, res) => {
+export const updateReview = catchAsync(async (req, res, next) => {
     const { reviewId } = req.params;
     const { rating, title, comment, tags } = req.body;
 
@@ -128,7 +128,7 @@ export const updateReview = catchAsync(async (req, res) => {
 });
 
 // Delete review
-export const deleteReview = catchAsync(async (req, res) => {
+export const deleteReview = catchAsync(async (req, res, next) => {
     const { reviewId } = req.params;
 
     await Review.findByIdAndDelete(reviewId);

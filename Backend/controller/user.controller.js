@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import User from "../modules/user.model.js"; // Updated import
 import catchAsync from "../catchAsync.js"; // Added catchAsync import
+import AppError from "../AppError.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import cloudinary from "../utility/Cloudinary.js";
@@ -139,14 +140,7 @@ export const login = catchAsync(async (req, res, next) => {
       },
       token, // Include token in response for mobile clients
     });
-  } catch (error) {
-    console.error("Login error:", error);
-    return res.status(500).json({
-      message: "Server error during login",
-      success: false,
-    });
-  }
-};
+});
 
 /**
  * User logout handler
@@ -154,21 +148,13 @@ export const login = catchAsync(async (req, res, next) => {
  * @param {Object} res - Express response object
  * @returns {Object} - JSON response
  */
-export const logout = async (req, res) => {
-  try {
+export const logout = catchAsync(async (req, res, next) => {
     res.clearCookie("token");
     return res.status(200).json({
       message: "Logged out successfully",
       success: true,
     });
-  } catch (error) {
-    console.error("Logout error:", error);
-    return res.status(500).json({
-      message: "Server error during logout",
-      success: false,
-    });
-  }
-};
+});
 
 /**
  * Get current user info
@@ -176,8 +162,7 @@ export const logout = async (req, res) => {
  * @param {Object} res - Express response object
  * @returns {Object} - JSON response
  */
-export const getCurrentUser = async (req, res) => {
-  try {
+export const getCurrentUser = catchAsync(async (req, res, next) => {
     const userId = req.id;
 
     const user = await User.findById(userId).select("-password");
