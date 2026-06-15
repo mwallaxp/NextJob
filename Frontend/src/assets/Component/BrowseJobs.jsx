@@ -1,12 +1,32 @@
 import { useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import useGetAllJobs from "./Hooks/useGetAllJobs";
-import { Card, Badge, ButtonSmall, SectionHeader, EmptyState } from "../../components/DesignSystem";
+import { Card, Badge, ButtonSmall, SectionHeader, EmptyState, StatCard } from "../../components/DesignSystem";
 import { Search, Filter, MapPin, DollarSign, Briefcase, TrendingUp, X } from "lucide-react";
+import { cva } from 'class-variance-authority';
+import { clsx } from 'clsx';
 import { Link } from "react-router-dom";
 
+const JobCardSkeleton = () => (
+  <div className="bg-white border-2 border-black-100 rounded-3xl p-6 animate-pulse">
+    <div className="h-6 bg-black-100 rounded w-3/4 mb-4"></div>
+    <div className="h-4 bg-black-50 rounded w-1/2 mb-6"></div>
+    <div className="h-4 bg-black-50 rounded w-full mb-2"></div>
+    <div className="h-4 bg-black-50 rounded w-full mb-4"></div>
+    <div className="flex gap-2 mb-6">
+      <div className="h-8 bg-black-100 rounded-full w-20"></div>
+      <div className="h-8 bg-black-100 rounded-full w-20"></div>
+    </div>
+    <div className="grid grid-cols-3 gap-4 pt-4 border-t border-black-100">
+      <div className="h-4 bg-black-50 rounded w-full"></div>
+      <div className="h-4 bg-black-50 rounded w-full"></div>
+      <div className="h-4 bg-black-50 rounded w-full"></div>
+    </div>
+  </div>
+);
+
 const BrowseJobs = () => {
-  const { allJobs } = useSelector((store) => store.job);
+  const { allJobs, isLoading } = useSelector((store) => store.job);
   useGetAllJobs();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -291,6 +311,31 @@ const BrowseJobs = () => {
   );
 };
 
+// Centralized styling for JobCard elements using cva and clsx
+const saveButtonVariants = cva(
+  "p-2 rounded-lg transition-all",
+  {
+    variants: {
+      saved: {
+        true: "bg-orange-100 text-orange-600",
+        false: "bg-black-100 text-black-600",
+      },
+    },
+    defaultVariants: {
+      saved: false,
+    },
+  }
+);
+
+const jobTitleClasses = clsx("text-2xl font-bold text-black-900");
+const companyNameClasses = clsx("text-black-600 text-sm mt-1");
+const postingDateClasses = clsx("text-xs font-medium text-orange-600 uppercase tracking-widest mt-2");
+const descriptionClasses = clsx("text-black-600 line-clamp-2 mb-3 flex-1");
+const metaInfoContainerClasses = clsx("grid grid-cols-3 gap-3 pt-4 border-t border-black-100");
+const metaItemLabelClasses = clsx("text-xs text-black-600");
+const metaItemValueClasses = clsx("font-bold text-black-900");
+const metaItemIconClasses = clsx("text-orange-500");
+
 // Improved Job Card Component
 const JobCard = ({ job }) => {
   const [saved, setSaved] = useState(false);
@@ -307,22 +352,21 @@ const JobCard = ({ job }) => {
   return (
     <Link to={`/description/${job._id}`}>
       <Card hoverable className="h-full flex flex-col">
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between mb-3">
           <div>
-            <p className="text-xs font-medium text-orange-600 uppercase tracking-widest">
+            <h3 className={jobTitleClasses}>{job.title}</h3>
+            <p className={companyNameClasses}>{job.company?.name || "Independent Client"}</p>
+            <p className={postingDateClasses}>
               {displayCreatedDate(job.createdAt)}
             </p>
-            <h3 className="text-xl font-bold text-black-900 mt-2">{job.title}</h3>
-            <p className="text-black-600 mt-1">{job.company?.name || "Independent Client"}</p>
           </div>
           <button
             onClick={(e) => {
               e.preventDefault();
               setSaved(!saved);
             }}
-            className={`p-2 rounded-lg transition-all ${
-              saved ? "bg-orange-100 text-orange-600" : "bg-black-100 text-black-600"
-            }`}
+            className={saveButtonVariants({ saved })}
+            aria-label={saved ? "Unsave job" : "Save job"}
           >
             <svg
               className="w-6 h-6"
@@ -340,42 +384,38 @@ const JobCard = ({ job }) => {
           </button>
         </div>
 
-        <p className="text-black-600 line-clamp-2 mb-4 flex-1">{job.description}</p>
+        <p className={descriptionClasses}>{job.description}</p>
 
-        <div className="flex items-center gap-2 mb-4 flex-wrap">
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
           {job.jobType && <Badge variant="primary">{job.jobType}</Badge>}
           {job.level && <Badge variant="teal">{job.level}</Badge>}
         </div>
 
-        <div className="grid grid-cols-3 gap-3 pt-4 border-t border-black-100">
+        <div className={metaInfoContainerClasses}>
           <div className="flex items-center gap-2">
-            <DollarSign size={18} className="text-orange-500" />
+            <DollarSign size={18} className={metaItemIconClasses} />
             <div>
-              <p className="text-xs text-black-600">Budget</p>
-              <p className="font-bold text-black-900">${job.budget}</p>
+              <p className={metaItemLabelClasses}>Budget</p>
+              <p className={metaItemValueClasses}>${job.budget}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <MapPin size={18} className="text-orange-500" />
+            <MapPin size={18} className={metaItemIconClasses} />
             <div>
-              <p className="text-xs text-black-600">Location</p>
-              <p className="font-bold text-black-900 truncate">
+              <p className={metaItemLabelClasses}>Location</p>
+              <p className={metaItemValueClasses}>
                 {job.location || job.company?.location || "Remote"}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Briefcase size={18} className="text-orange-500" />
+            <Briefcase size={18} className={metaItemIconClasses} />
             <div>
-              <p className="text-xs text-black-600">Positions</p>
-              <p className="font-bold text-black-900">{job.position || 1}</p>
+              <p className={metaItemLabelClasses}>Positions</p>
+              <p className={metaItemValueClasses}>{job.position || 1}</p>
             </div>
           </div>
         </div>
-
-        <button className="mt-4 w-full py-3 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-semibold transition-all">
-          View Details & Apply
-        </button>
       </Card>
     </Link>
   );

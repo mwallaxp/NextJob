@@ -2,6 +2,8 @@ import catchAsync from './catchAsync.js';
 import AppError from './AppError.js';
 import Application from './modules/application.model.js';
 import Job from './modules/job.model.js';
+import Notification from './modules/notification.model.js';
+import notificationService from './services/notification.service.js';
 import mongoose from 'mongoose';
 
 /**
@@ -140,15 +142,16 @@ export const updateStatus = catchAsync(async (req, res, next) => {
   application.status = status.toLowerCase();
   await application.save();
 
-  // Trigger real-time notification via Socket.io
-  const io = req.app.get("io");
-  if (io) {
-    io.to(`user_${application.applicant}`).emit("notification", {
-      type: "APPLICATION_STATUS_UPDATE",
-      message: `Your application status has been updated to ${status}.`,
-      applicationId: application._id
-    });
-  }
+  const job = await Job.findById(application.job);
+
+  await notificationService.createNotification(req, {
+    recipient: application.applicant,
+    sender: req.id,
+    type: "APPLICATION_STATUS",
+    socketEvent: "APPLICATION_STATUS_UPDATE",
+    message: `Your application for "${job?.title}" has been ${status}.`,
+    link: `/dashboard`
+  });
 
   res.status(200).json({ success: true, message: "Status updated successfully." });
 });

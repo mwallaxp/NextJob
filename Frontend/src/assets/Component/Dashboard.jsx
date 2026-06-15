@@ -20,7 +20,7 @@ const Dashboard = () => {
     }
 
     if (user.role === "recruiter") {
-      navigate("/admin", { replace: true });
+      navigate("/recruiter-dashboard", { replace: true });
     }
   }, [user, navigate]);
 
@@ -66,7 +66,7 @@ const Dashboard = () => {
     { completed: !!user?.profile?.fullname, label: "Complete Profile", action: () => navigate("/profile"), icon: <User size={18} /> },
     { completed: !!user?.profile?.resume, label: "Upload Resume", action: () => navigate("/profile"), icon: <Download size={18} /> },
     { completed: (user?.profile?.skills?.length || 0) >= 3, label: "Add 3+ Skills", action: () => navigate("/profile"), icon: <Target size={18} /> },
-    { completed: statsData.totalApplications >= 5, label: "Apply to 5 Jobs", action: () => navigate("/browse"), icon: <BriefcaseOpen size={18} /> },
+    { completed: statsData.totalApplications >= 5, label: "Apply to 5 Jobs", action: () => navigate("/browse"), icon: <Briefcase size={18} /> },
   ];
 
   const completedSteps = nextSteps.filter(s => s.completed).length;
@@ -106,7 +106,7 @@ const Dashboard = () => {
         {/* Key Statistics */}
         <div className="grid gap-6 mb-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           <StatCard 
-            icon={BriefcaseOpen} 
+            icon={Briefcase} 
             label="Applications Sent" 
             value={statsData.totalApplications}
             backgroundColor="bg-orange-50"
@@ -225,7 +225,7 @@ const Dashboard = () => {
           
           {latestApplications.length === 0 ? (
             <EmptyState 
-              icon={BriefcaseOpen}
+              icon={Briefcase}
               title="No Applications Yet"
               description="Start applying to jobs to see your applications here"
               action={<Link to="/browse" className="inline-block px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all">

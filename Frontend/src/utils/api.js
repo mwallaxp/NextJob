@@ -6,7 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://nextjob-sw2d.onrender.c
 
 const api = axios.create({
   baseURL: API_URL,
-  timeout: 30000, // Global timeout set to 30 seconds
+  timeout: 60000, // Increased to 60s to handle Render cold starts
   withCredentials: true, // Automatically send cookies with every request
   headers: {
     'Content-Type': 'application/json',

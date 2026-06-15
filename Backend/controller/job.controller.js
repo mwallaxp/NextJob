@@ -104,41 +104,50 @@ export const postJob = catchAsync(async (req, res, next) => {
 });
 
 export const getAllJobs = catchAsync(async (req, res, next) => {
-        // Safely access keyword from query
-        const keyword = req.query.keyword || "";
-        // Define MongoDB query
-        const query = {
-            $or: [
-                { title: { $regex: keyword, $options: 'i' } },
-                { description: { $regex: keyword, $options: 'i' } },
-                { skills: { $regex: keyword, $options: 'i' } },
-            ],
-        };
+    const { keyword = "", page = 1, limit = 10, jobType, location } = req.query;
 
-        // Fetch jobs from database
-        const jobs = await Job.find(query)
-            .populate('company')
-            .sort({ createdAt: -1 });
+    // Pagination setup
+    const pageNum = Math.max(1, Number(page) || 1);
+    const limitNum = Math.min(50, Math.max(1, Number(limit) || 10));
+    const skip = (pageNum - 1) * limitNum;
 
-        // Handle no jobs found
-        if (jobs.length === 0) {
-            return res.status(200).json({ jobs: [], success: true });
-        }
+    const query = {};
 
-        // Success response
-        return res.status(200).json({
-            jobs,
-            success: true,
-        }); 
+    if (keyword) {
+        query.$or = [
+            { title: { $regex: keyword, $options: 'i' } },
+            { description: { $regex: keyword, $options: 'i' } },
+            { skills: { $regex: keyword, $options: 'i' } },
+        ];
+    }
+
+    if (jobType) query.jobType = jobType;
+    if (location) query.location = { $regex: location, $options: 'i' };
+
+    // Perform data fetching and total count in parallel
+    const [jobs, totalJobs] = await Promise.all([
+        Job.find(query)
+            .populate('company', 'name logo website')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limitNum)
+            .lean(), // Returns plain JS objects, much faster for reads
+        Job.countDocuments(query),
+    ]);
+
+    return res.status(200).json({
+        success: true,
+        totalJobs,
+        currentPage: pageNum,
+        totalPages: Math.ceil(totalJobs / limitNum),
+        jobs: jobs || [],
+    });
 });
 
 export const getJobById = catchAsync(async (req, res, next) => {
         const jobId = req.params.id;
         if (!mongoose.Types.ObjectId.isValid(jobId)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid Job ID format"
-            });
+            return next(new AppError("Invalid Job ID format", 400));
         }
     
         const job = await Job.findById(jobId)
@@ -149,7 +158,7 @@ export const getJobById = catchAsync(async (req, res, next) => {
             })
 
         if (!job){
-            return res.status(404).json({ message: "Job not found", success: false });
+            return next(new AppError("Job not found", 404));
         }
         return res.status(200).json({ job, success: true });
 });

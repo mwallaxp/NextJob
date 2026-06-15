@@ -1,23 +1,31 @@
-import { useEffect } from "react"
-import { useSelector } from "react-redux"
-import { useNavigate } from "react-router-dom"
+import React from 'react';
+import { useSelector } from 'react-redux';
+import { Navigate, useLocation } from 'react-router-dom';
 
-const ProtectedRoute = ({ children, allowedRoles = ["recruiter"] }) => {
+/**
+ * ProtectedRoute handles authentication and role-based authorization.
+ * Prevents unauthorized access and redirection loops.
+ */
+const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user } = useSelector((store) => store.auth);
-  const navigate = useNavigate();
+  const location = useLocation();
 
-  useEffect(() => {
-    if (!user) {
-      navigate("/login", { replace: true });
-      return;
-    }
+  if (!user) {
+    // Redirect to login but save the current location to redirect back later
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
 
-    if (!allowedRoles.includes(user.role)) {
-      navigate("/", { replace: true });
-    }
-  }, [allowedRoles, user, navigate]);
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    // If user doesn't have the right role, send them to their primary dashboard
+    // This prevents the "shaking" UI caused by competing redirects
+    const redirectPath = user.role === 'recruiter' 
+      ? '/recruiter-dashboard' 
+      : '/dashboard';
+    
+    return <Navigate to={redirectPath} replace />;
+  }
 
-  return <>{user && allowedRoles.includes(user.role) ? children : null}</>;
+  return children;
 };
 
 export default ProtectedRoute;

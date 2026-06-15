@@ -1,21 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Menu, X, ChevronDown, LogOut, User, Settings, Bell } from 'lucide-react';
 import { setAuthUser } from '../../../redux/authSlice';
+import { toast } from 'react-toastify';
+import { useSocket } from '../hooks/useSocket';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
   const { user } = useSelector((store) => store.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const socket = useSocket(user?._id);
 
   const handleLogout = () => {
     dispatch(setAuthUser(null));
     localStorage.removeItem('token');
     navigate('/login');
   };
+
+  useEffect(() => {
+    if (socket && user?.role === 'candidate') {
+      socket.on('notification', (data) => {
+        toast.info(data.message);
+        setNotificationCount((prev) => prev + 1);
+      });
+    }
+  }, [socket, user]);
 
   return (
     <nav className="sticky top-0 z-50 border-b-2 shadow-soft">
@@ -58,10 +72,18 @@ const Navbar = () => {
           {/* Right Side */}
           <div className="flex items-center gap-4">
             {user && (
-              <button className="relative p-2 transition hover:opacity-90">
+              <Link 
+                to="/notifications"
+                className="relative p-2 transition hover:opacity-90 block"
+                onClick={() => setNotificationCount(0)}
+              >
                 <Bell size={24} />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-orange-500 rounded-full"></span>
-              </button>
+                {notificationCount > 0 && (
+                  <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white shadow-sm">
+                    {notificationCount}
+                  </span>
+                )}
+              </Link>
             )}
 
             {user ? (
