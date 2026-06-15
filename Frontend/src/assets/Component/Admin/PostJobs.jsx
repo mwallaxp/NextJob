@@ -144,7 +144,7 @@ const PostJobs = () => {
 
       if (res.data.success) {
         setSubmitted(true);
-        setTimeout(() => navigate("/recruiter/jobs"), 1300);
+        setTimeout(() => navigate("/admin/jobs"), 1300); // Redirect to the admin job postings list
       }
     } catch (error) {
       setErrors({
@@ -187,7 +187,7 @@ const PostJobs = () => {
         <div className="mb-8 flex flex-col gap-5 border-b border-zinc-200 pb-8 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <Link
-              to="/recruiter/jobs"
+              to="/admin/jobs"
               className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-zinc-500 transition hover:text-zinc-950"
             >
               <ArrowLeft size={16} />

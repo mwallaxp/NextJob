@@ -50,7 +50,7 @@ useEffect(()=>{
         <button
           type="button"
           className="inline-flex items-center justify-center gap-2 rounded-full bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
-          onClick={() => navigate("/recruiter/jobs/create")}
+          onClick={() => navigate("/admin/jobs/create")}
         >
           <Plus size={16} />
           New job

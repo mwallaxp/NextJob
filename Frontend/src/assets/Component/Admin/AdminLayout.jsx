@@ -1,11 +1,11 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { BarChart3, Briefcase, Building2, PlusCircle } from "lucide-react";
 
-const adminLinks = [
-  { to: "/recruiter", label: "Dashboard", icon: BarChart3 },
-  { to: "/recruiter/companies", label: "Companies", icon: Building2 },
-  { to: "/recruiter/jobs", label: "Job postings", icon: Briefcase },
-  { to: "/recruiter/jobs/create", label: "Post job", icon: PlusCircle },
+const recruiterAdminLinks = [ // Renamed for clarity as this layout serves both recruiter and admin functions
+  { to: "/admin", label: "Dashboard", icon: BarChart3 }, // Base for recruiter/admin dashboard
+  { to: "/admin/companies", label: "Companies", icon: Building2 },
+  { to: "/admin/jobs", label: "Job postings", icon: Briefcase },
+  { to: "/admin/jobs/create", label: "Post job", icon: PlusCircle },
 ];
 
 const AdminLayout = () => {
@@ -20,11 +20,11 @@ const AdminLayout = () => {
                 <h1 className="mt-3 text-2xl font-semibold tracking-tight">Recruiter</h1>
               </div>
               <nav className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
-                {adminLinks.map((link) => (
+                {recruiterAdminLinks.map((link) => (
                   <NavLink
                     key={link.to}
                     to={link.to}
-                    end={link.to === "/recruiter"}
+                    end={link.to === "/admin"} // Mark the base dashboard link as exact
                     className={({ isActive }) =>
                       `flex items-center gap-3 rounded-full px-4 py-3 text-sm font-semibold transition ${
                         isActive

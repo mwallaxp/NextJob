@@ -392,8 +392,8 @@ const CompanySetUp = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-3xl mx-auto my-10 px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-center space-x-2">
-          <button
-            onClick={() => navigate("/recruiter/companies")}
+          <button // Back button
+            onClick={() => navigate("/admin/companies")}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-800 font-medium transition-colors p-2 rounded-full hover:bg-gray-100"
           >
             <ArrowLeft size={20} />

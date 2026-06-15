@@ -11,7 +11,7 @@ const AuthRedirector = () => {
     if (user) {
       // User is logged in, redirect to appropriate dashboard
       if (user.role === 'recruiter') {
-        navigate('/recruiter-dashboard', { replace: true });
+        navigate('/admin', { replace: true }); // Redirect recruiters to the unified admin/recruiter dashboard
       } else {
         // Assuming 'candidate' or other roles go to the main dashboard
         navigate('/dashboard', { replace: true });

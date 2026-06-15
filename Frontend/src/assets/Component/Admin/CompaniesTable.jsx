@@ -81,7 +81,7 @@ const CompaniesTable = () => {
                   </svg>
                   <p>You haven't registered any companies yet</p>
                   <button 
-                    onClick={() => navigate('/recruiter/companies/create')}
+                    onClick={() => navigate('/admin/companies/create')}
                     className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                   >
                     Create New Company
@@ -139,7 +139,7 @@ const CompaniesTable = () => {
                       <button
                         className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
                         onClick={() => {
-                          navigate(`/recruiter/companies/${company._id}`);
+                          navigate(`/admin/companies/${company._id}`);
                           setPopoverOpen(null);
                         }}
                       >

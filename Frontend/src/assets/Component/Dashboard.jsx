@@ -20,7 +20,7 @@ const Dashboard = () => {
     }
 
     if (user.role === "recruiter") {
-      navigate("/recruiter-dashboard", { replace: true });
+      navigate("/admin", { replace: true }); // Redirect recruiters to the unified admin/recruiter dashboard
     }
   }, [user, navigate]);
 

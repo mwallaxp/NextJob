@@ -116,7 +116,7 @@ const JobPostForm = () => {
       const res = await api.post(`${JOB_API_END_POINT}/post`, payload);
       if (res.data.success) {
         toast.success("Job posted successfully!");
-        navigate('/recruiter-dashboard'); // Redirect to recruiter dashboard
+        navigate('/admin/jobs'); // Redirect to the job postings list within the admin section
       }
     } catch (error) {
       console.error("Error posting job:", error);

@@ -15,7 +15,6 @@ import Footer from "./components/Footer";
 import Signup from "./assets/Component/shared/Signup";
 import Login from "./assets/Component/Auth/login.jsx";
 import Home from "./assets/Component/Auth/Home";
-import AuthRedirector from "./assets/Component/AuthRedirector.jsx"; // New import
 import Notifications from "./assets/Component/Notifications"; // New import
 
 // Main Pages
@@ -34,7 +33,6 @@ import EarningsPaymentDashboard from "./components/EarningsPaymentDashboard";
 // Admin
 import AdminDashboard from "./assets/Component/Admin/AdminDashboard";
 import AdminLayout from "./assets/Component/Admin/AdminLayout";
-import ProtectedRoute from "./assets/Component/Admin/ProtectRoute.jsx";
 import RecruiterDashboard from "./assets/Component/RecruiterDashboard.jsx"; // New import
 import JobPostForm from "./assets/Component/Admin/JobPostForm.jsx"; // New import
 import JobApplicants from "./assets/Component/Admin/JobApplicants.jsx"; // New import
@@ -42,6 +40,8 @@ import JobApplicants from "./assets/Component/Admin/JobApplicants.jsx"; // New i
 // Shared
 import Layout from "./assets/Component/shared/Layout";
 import NotFound from "./assets/Component/shared/NotFound";
+import AuthRedirector from "./assets/Component/AuthRedirector.jsx"; // New import
+import ProtectedRoute from "./assets/Component/Admin/ProtectRoute.jsx"; // New import
 
 // Layout Wrapper
 const LayoutWithNavFooter = () => (
@@ -79,19 +79,19 @@ const appRouter = createBrowserRouter([
       // Admin Routes
       {
         path: "admin",
-        element: <ProtectedRoute><AdminLayout /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={['recruiter', 'admin']}><AdminLayout /></ProtectedRoute>,
         children: [
           { index: true, element: <AdminDashboard /> },
+          // Recruiter job management routes, now nested under /admin
+          { path: "jobs/create", element: <JobPostForm /> },
+          { path: "jobs/:id/applicants", element: <JobApplicants /> },
+          // Recruiter company management routes, now nested under /admin
+          { path: "companies", element: <Companies /> },
+          { path: "companies/create", element: <CompanyCreate /> },
+          { path: "companies/:id", element: <CompanySetUp /> },
           // ... other admin routes
         ]
       },
-      // Recruiter Routes
-      {
-        path: "recruiter-dashboard",
-        element: <ProtectedRoute allowedRoles={['recruiter']}><RecruiterDashboard /></ProtectedRoute>,
-      },
-      { path: "admin/jobs/create", element: <ProtectedRoute allowedRoles={['recruiter']}><JobPostForm /></ProtectedRoute> },
-      { path: "admin/jobs/:id/applicants", element: <ProtectedRoute allowedRoles={['recruiter']}><JobApplicants /></ProtectedRoute> },
       
       { path: "*", element: <NotFound /> }
     ]

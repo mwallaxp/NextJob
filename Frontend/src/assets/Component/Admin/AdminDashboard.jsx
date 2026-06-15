@@ -52,14 +52,14 @@ const AdminDashboard = () => {
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
-              to="/recruiter/jobs/create"
+              to="/admin/jobs/create"
               className="inline-flex items-center justify-center gap-2 rounded-full bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
             >
               <Plus size={16} />
               Post job
             </Link>
             <Link
-              to="/recruiter/companies/create"
+              to="/admin/companies/create"
               className="inline-flex items-center justify-center gap-2 rounded-full border border-zinc-300 px-5 py-3 text-sm font-semibold text-zinc-950 transition hover:border-zinc-950"
             >
               <Building2 size={16} />
@@ -99,7 +99,7 @@ const AdminDashboard = () => {
               <h2 className="text-lg font-semibold text-zinc-950">Recent job posts</h2>
               <p className="text-sm text-zinc-500">Newest openings and applicant volume.</p>
             </div>
-            <Link to="/recruiter/jobs" className="text-sm font-semibold text-zinc-950 underline-offset-4 hover:underline">
+            <Link to="/admin/jobs" className="text-sm font-semibold text-zinc-950 underline-offset-4 hover:underline">
               View all
             </Link>
           </div>
@@ -123,7 +123,7 @@ const AdminDashboard = () => {
                       {job.applications?.length || 0} applicants
                     </span>
                     <Link
-                      to={`/recruiter/jobs/${job._id}/applicants`}
+                      to={`/admin/jobs/${job._id}/applicants`}
                       className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-zinc-950 text-white transition hover:bg-zinc-800"
                       title="View applicants"
                     >
@@ -158,7 +158,7 @@ const AdminDashboard = () => {
               <Link to="/recruiter/jobs/create" className="rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:border-zinc-950">
                 Publish another opening
               </Link>
-              <Link to="/recruiter/companies" className="rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:border-zinc-950">
+              <Link to="/admin/companies" className="rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:border-zinc-950">
                 Manage company profiles
               </Link>
             </div>

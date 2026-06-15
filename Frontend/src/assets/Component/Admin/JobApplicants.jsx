@@ -69,7 +69,7 @@ const JobApplicants = () => {
     <main className="min-h-screen bg-black-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <button 
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/admin/jobs')} // Navigate back to the job postings list
           className="flex items-center gap-2 text-black-600 hover:text-orange-600 transition-colors mb-6 font-semibold"
         >
           <ArrowLeft size={20} />

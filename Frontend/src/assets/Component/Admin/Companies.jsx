@@ -30,7 +30,7 @@ useEffect(()=>{
           <button
             type="button"
             className="rounded-lg bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
-            onClick={() => navigate("/recruiter/companies/create")}
+            onClick={() => navigate("/admin/companies/create")}
           >
             New company
           </button>
