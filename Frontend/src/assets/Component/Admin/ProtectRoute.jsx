@@ -8,8 +8,12 @@ import { ROUTES } from '../../../routes/paths';
  * Prevents unauthorized access and redirection loops.
  */
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { user } = useSelector((store) => store.auth);
+  const { user, loading, authChecked } = useSelector((store) => store.auth);
   const location = useLocation();
+
+  if (loading || !authChecked) {
+    return <div className="p-12 text-center text-slate-500 font-medium">Checking your session...</div>;
+  }
 
   if (!user) {
     // Redirect to login but save the current location to redirect back later

@@ -5,6 +5,13 @@ import AppError from '../AppError.js';
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
+const getAuthCookieOptions = (maxAge) => ({
+    maxAge,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+});
+
 export const getUserProfile = catchAsync(async (req, res, next) => {
     const userId = req.params.id;
     const user = await User.findById(userId).select('-password');
@@ -117,7 +124,7 @@ export const login = catchAsync(async (req, res, next) => {
         return next(new AppError("Account doesn't exist with current role.", 400));
     }
 
-    const tokenData = { userId: user._id };
+    const tokenData = { userId: user._id, role: user.role };
     const token = jwt.sign(tokenData, process.env.SECRET_KEY, { expiresIn: '1d' });
 
     const userData = {
@@ -129,15 +136,16 @@ export const login = catchAsync(async (req, res, next) => {
         profile: user.profile
     };
 
-    return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: 'strict' }).json({
+    return res.status(200).cookie("token", token, getAuthCookieOptions(1 * 24 * 60 * 60 * 1000)).json({
         message: `Welcome back ${user.fullname}`,
         user: userData,
+        token,
         success: true
     });
 });
 
 export const logout = catchAsync(async (req, res, next) => {
-    return res.status(200).cookie("token", "", { maxAge: 0 }).json({
+    return res.status(200).cookie("token", "", getAuthCookieOptions(0)).json({
         message: "Logged out successfully.",
         success: true
     });

@@ -1,19 +1,24 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setLoading, setUser } from "../../../redux/authSlice";
+import { setAuthChecked, setLoading, setUser } from "../../../redux/authSlice";
 import api from "../../../utils/api";
 import { USER_API_END_POINT } from "../../../utils/constant";
 
 const AuthInitializer = () => {
   const dispatch = useDispatch();
-  const { user } = useSelector((store) => store.auth);
+  const { user, authChecked } = useSelector((store) => store.auth);
 
   useEffect(() => {
     let active = true;
 
     const loadCurrentUser = async () => {
       const token = localStorage.getItem('token');
-      if (!token && !user) return;
+      if (authChecked) return;
+
+      if (!token && !user) {
+        dispatch(setAuthChecked(true));
+        return;
+      }
 
       dispatch(setLoading(true));
       try {
@@ -32,6 +37,7 @@ const AuthInitializer = () => {
       } finally {
         if (active) {
           dispatch(setLoading(false));
+          dispatch(setAuthChecked(true));
         }
       }
     };
@@ -41,7 +47,7 @@ const AuthInitializer = () => {
     return () => {
       active = false; // Cleanup to prevent state updates on unmounted component
     };
-  }, [dispatch]); // Only run on initial mount
+  }, [authChecked, dispatch, user]);
 
   return null;
 };

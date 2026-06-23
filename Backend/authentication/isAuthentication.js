@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
+import User from '../modules/user.model.js';
 
-export const isAuthenticate = (req, res, next) => {
+export const isAuthenticate = async (req, res, next) => {
 
   const bearerToken = req.headers.authorization?.startsWith("Bearer ")
     ? req.headers.authorization.split(" ")[1]
@@ -23,8 +24,19 @@ export const isAuthenticate = (req, res, next) => {
       success: false,
     })
     }
-    req.id = decoded.userId || decoded.id;
-    req.role = decoded.role;
+    const userId = decoded.userId || decoded.id;
+    const user = await User.findById(userId).select("-password");
+
+    if (!user) {
+      return res.status(401).json({
+        message: "Authentication failed! User no longer exists.",
+        success: false,
+      });
+    }
+
+    req.id = user._id;
+    req.user = user;
+    req.role = user.role;
     next();
   }
   catch (error){

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Menu, X, ChevronDown, LogOut, User, Settings, Bell } from 'lucide-react';
-import { setAuthUser } from '../../../redux/authSlice';
+import { setUser } from '../../../redux/authSlice';
 import { toast } from 'react-toastify';
 import { useSocket } from '../hooks/useSocket';
 
@@ -17,7 +17,7 @@ const Navbar = () => {
   const socket = useSocket(user?._id);
 
   const handleLogout = () => {
-    dispatch(setAuthUser(null));
+    dispatch(setUser(null));
     localStorage.removeItem('token');
     navigate('/login');
   };
