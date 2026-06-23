@@ -1,8 +1,7 @@
-import api from '../../../utils/api';
 import { useEffect, useState } from 'react';
-import { JOB_API_END_POINT } from '../../../utils/constant';
 import { useDispatch } from 'react-redux';
 import { setAllAdminJobs} from '../../../redux/jobSlice';
+import { getRecruiterJobs } from '../../../services/jobService';
 
 export const useGetAllAdminJobs = (params = {}) => {
     const dispatch = useDispatch(); // Invoke useDispatch to get the dispatch function
@@ -11,7 +10,7 @@ export const useGetAllAdminJobs = (params = {}) => {
     useEffect(() => {
         const fetchAllAdminJobs = async () => {
             try {
-                const res = await api.get(`${JOB_API_END_POINT}/getadminjobs`, { params });
+                const res = await getRecruiterJobs(params);
                 if (res.data.success) {
                     dispatch(setAllAdminJobs(res.data.jobs)); // Dispatch the action with the jobs data
                     setMeta({

@@ -163,7 +163,7 @@ export const getJobById = catchAsync(async (req, res, next) => {
         return res.status(200).json({ job, success: true });
 });
 
-//admin recruiter jobs creation 
+// Recruiter-owned jobs. The old /getAdminjobs route still points here for compatibility.
 export const getAdminJobs = catchAsync(async (req, res, next) => {
         const AdminId=req.id;
         const {

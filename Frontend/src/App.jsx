@@ -15,19 +15,20 @@ import Support from "./assets/Component/Support.jsx";
 import Notifications from "./assets/Component/Notifications.jsx";
 import CompanyPage from "./assets/Component/CompanyPage.jsx";
 import JobDescription from "./assets/Component/JobDescription.jsx";
-import Companies from "./assets/Component/Admin/Companies.jsx";
-import CompanyCreate from "./assets/Component/Admin/CompanyCreate.jsx";
-import CompanySetUp from "./assets/Component/Admin/CompanySetUp.jsx";
-import AdminJobs from "./assets/Component/Admin/AdminJobs.jsx";
-import Applicants from "./assets/Component/Admin/Applicants.jsx";
-import PostJobs from "./assets/Component/Admin/PostJobs.jsx";
+import Companies from "./assets/Component/Recruiter/Companies.jsx";
+import CompanyCreate from "./assets/Component/Recruiter/CompanyCreate.jsx";
+import CompanySetUp from "./assets/Component/Recruiter/CompanySetUp.jsx";
+import RecruiterJobs from "./assets/Component/Recruiter/RecruiterJobs.jsx";
+import Applicants from "./assets/Component/Recruiter/Applicants.jsx";
+import PostJobs from "./assets/Component/Recruiter/PostJobs.jsx";
 import AuditLogs from "./assets/Component/Admin/AuditLogs.jsx";
-import AdminDashboard from "./assets/Component/Admin/AdminDashboard.jsx";
+import RecruiterDashboard from "./assets/Component/Recruiter/RecruiterDashboard.jsx";
 import SystemAdminDashboard from "./assets/Component/Admin/SystemAdminDashboard.jsx";
 import ProtectedRoute from "./assets/Component/Admin/ProtectRoute.jsx";
-import AdminLayout from "./assets/Component/Admin/AdminLayout.jsx";
+import RecruiterLayout from "./assets/Component/Recruiter/RecruiterLayout.jsx";
 import Layout from "./assets/Component/shared/Layout";
 import NotFound from "./assets/Component/shared/NotFound";
+import { ROUTES } from "./routes/paths";
 
 const appRouter = createBrowserRouter([
   {
@@ -100,11 +101,11 @@ const appRouter = createBrowserRouter([
       },
       {
         path: "recruiter",
-        element: <ProtectedRoute allowedRoles={["recruiter"]}><AdminLayout /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["recruiter"]}><RecruiterLayout /></ProtectedRoute>,
         children: [
           {
             index: true,
-            element: <AdminDashboard />,
+            element: <RecruiterDashboard />,
           },
           {
             path: "companies",
@@ -120,7 +121,7 @@ const appRouter = createBrowserRouter([
           },
           {
             path: "jobs",
-            element: <AdminJobs />,
+            element: <RecruiterJobs />,
           },
           {
             path: "jobs/create",
@@ -146,7 +147,7 @@ const appRouter = createBrowserRouter([
       },
       {
         path: "admin/*",
-        element: <Navigate to="/admin" replace />,
+        element: <Navigate to={ROUTES.ADMIN} replace />,
       },
       {
         path: "*",

@@ -4,8 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import api from '../../../utils/api';
-import { JOB_API_END_POINT, COMPANY_API_END_POINT } from '../../../utils/constant';
 import {
   Card,
   ButtonPrimary,
@@ -16,6 +14,9 @@ import {
 } from "../../../components/DesignSystem";
 import { toast } from 'react-toastify';
 import { ArrowLeft } from 'lucide-react';
+import { ROUTES } from '../../../routes/paths';
+import { createJob } from '../../../services/jobService';
+import { getRecruiterCompanies } from '../../../services/companyService';
 
 const schema = z.object({
   title: z.string().min(3, "Job title must be at least 3 characters"),
@@ -58,7 +59,7 @@ const JobPostForm = () => {
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const res = await api.get(`${COMPANY_API_END_POINT}/recruiter`);
+        const res = await getRecruiterCompanies();
         if (res.data.success) {
           setCompanies(res.data.companies);
         }
@@ -113,10 +114,10 @@ const JobPostForm = () => {
         delete payload.companyId; // Ensure companyId is not empty string if companyName is used
       }
 
-      const res = await api.post(`${JOB_API_END_POINT}/post`, payload);
+      const res = await createJob(payload);
       if (res.data.success) {
         toast.success("Job posted successfully!");
-        navigate('/admin/jobs'); // Redirect to the job postings list within the admin section
+        navigate(ROUTES.RECRUITER_JOBS);
       }
     } catch (error) {
       console.error("Error posting job:", error);

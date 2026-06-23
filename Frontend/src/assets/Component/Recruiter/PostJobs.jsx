@@ -2,8 +2,6 @@ import "./PostJobs.css";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import api from "../../../utils/api";
-import { JOB_API_END_POINT } from "../../../utils/constant";
 import useGetAllCompanies from "../Hooks/useGetAllCompanies";
 import {
   ArrowLeft,
@@ -18,6 +16,8 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
+import { ROUTES } from "../../../routes/paths";
+import { createJob, getJobById, updateJob } from "../../../services/jobService";
 
 const initialInput = {
   title: "",
@@ -67,7 +67,7 @@ const PostJobs = () => {
 
       try {
         setLoading(true);
-        const res = await api.get(`${JOB_API_END_POINT}/get/${jobId}`);
+        const res = await getJobById(jobId);
         if (res.data.success) {
           const job = res.data.job;
           setInput({
@@ -139,12 +139,12 @@ const PostJobs = () => {
     try {
       setLoading(true);
       const res = isEditing
-        ? await api.patch(`${JOB_API_END_POINT}/${jobId}`, payload)
-        : await api.post(`${JOB_API_END_POINT}/post`, payload);
+        ? await updateJob(jobId, payload)
+        : await createJob(payload);
 
       if (res.data.success) {
         setSubmitted(true);
-        setTimeout(() => navigate("/admin/jobs"), 1300); // Redirect to the admin job postings list
+        setTimeout(() => navigate(ROUTES.RECRUITER_JOBS), 1300);
       }
     } catch (error) {
       setErrors({
@@ -187,7 +187,7 @@ const PostJobs = () => {
         <div className="mb-8 flex flex-col gap-5 border-b border-zinc-200 pb-8 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <Link
-              to="/admin/jobs"
+              to={ROUTES.RECRUITER_JOBS}
               className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-zinc-500 transition hover:text-zinc-950"
             >
               <ArrowLeft size={16} />

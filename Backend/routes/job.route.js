@@ -9,6 +9,7 @@ const router = express.Router();
 
 router.route("/post").post(isAuthenticate, authorizeRoles("recruiter"), postJob);
 router.route("/get").get(getAllJobs);
+router.route("/recruiter").get(isAuthenticate, authorizeRoles("recruiter"), getAdminJobs);
 router.route("/getAdminjobs").get(isAuthenticate, authorizeRoles("recruiter"), getAdminJobs);
 router.route("/:id").patch(isAuthenticate, authorizeRoles("recruiter"), updateJob);
 router.route("/:id/status").patch(isAuthenticate, authorizeRoles("recruiter"), updateJobStatus);

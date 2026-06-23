@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api from '../../../utils/api';
 import { toast } from 'react-toastify';
 import ApplicantsTable from './ApplicantsTable';
 import SEO from '../shared/SEO';
 import { ArrowLeft, Users } from 'lucide-react';
+import { ROUTES } from '../../../routes/paths';
+import { getJobApplicants, updateApplicationReview, updateApplicationStatus } from '../../../services/applicationService';
 
 const Applicants = () => {
   const { id: jobId } = useParams();
@@ -19,9 +20,7 @@ const Applicants = () => {
 
   const fetchApplicants = useCallback(async () => {
     try {
-      const res = await api.get(`/api/v1/application/${jobId}/applicant`, {
-        params: { search, status, interviewStage, page, limit: 10 },
-      });
+      const res = await getJobApplicants(jobId, { search, status, interviewStage, page, limit: 10 });
       if (res.data.success) {
         setJob(res.data.job);
         setMeta({
@@ -32,7 +31,7 @@ const Applicants = () => {
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to load candidates");
-      navigate('/recruiter/jobs');
+      navigate(ROUTES.RECRUITER_JOBS);
     } finally {
       setLoading(false);
     }
@@ -44,7 +43,7 @@ const Applicants = () => {
 
   const handleStatusUpdate = async (applicationId, status) => {
     try {
-      const res = await api.post(`/api/v1/application/status/${applicationId}/update`, { status });
+      const res = await updateApplicationStatus(applicationId, status);
       if (res.data.success) {
         toast.success(`Application updated to ${status}`);
         fetchApplicants(); // Refresh list to reflect status changes
@@ -56,7 +55,7 @@ const Applicants = () => {
 
   const handleReviewUpdate = async (applicationId, payload) => {
     try {
-      const res = await api.patch(`/api/v1/application/${applicationId}/review`, payload);
+      const res = await updateApplicationReview(applicationId, payload);
       if (res.data.success) {
         toast.success("Application review updated");
         fetchApplicants();

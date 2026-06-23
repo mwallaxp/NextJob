@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import api from "../../../utils/api";
-import { JOB_API_END_POINT } from "../../../utils/constant";
-import { Edit2, Eye, MoreHorizontal, PauseCircle, PlayCircle, XCircle } from "lucide-react";
+import { Edit2, Eye, PauseCircle, PlayCircle, XCircle } from "lucide-react";
+import { ROUTES } from "../../../routes/paths";
+import { updateJobStatus } from "../../../services/jobService";
+import ActionMenu from "../../../components/recruiter/ActionMenu";
 
-const AdminJobsTable = () => {
+const RecruiterJobsTable = () => {
   const { searchJobByText } = useSelector((store) => store.job);
   const { allAdminJobs } = useSelector((store) => store.job);
   const [filterJobs, setFilterJobs] = useState(allAdminJobs || []);
@@ -32,7 +33,7 @@ const AdminJobsTable = () => {
 
   const updateStatus = async (jobId, status) => {
     try {
-      const res = await api.patch(`${JOB_API_END_POINT}/${jobId}/status`, { status });
+      const res = await updateJobStatus(jobId, status);
       if (res.data.success) {
         setFilterJobs((jobs) => jobs.map((job) => (job._id === jobId ? { ...job, status } : job)));
         setPopoverOpen(null);
@@ -89,28 +90,23 @@ const AdminJobsTable = () => {
                   </span>
                 </td>
                 <td className="relative px-5 py-4 text-right">
-                  <button
-                    onClick={(e) => {
+                  <ActionMenu
+                    isOpen={isPopoverOpen === job._id}
+                    onToggle={(e) => {
                       e.stopPropagation();
                       togglePopover(job._id);
                     }}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-950"
-                    title="Open job actions"
+                    label="Open job actions"
                   >
-                    <MoreHorizontal size={18} />
-                  </button>
-                  
-                  {isPopoverOpen === job._id && (
-                    <div className="absolute right-5 top-14 z-10 w-48 rounded-xl border border-zinc-200 bg-white py-2 text-sm shadow-xl">
                       <button
-                        onClick={() => navigate(`/admin/jobs/${job._id}/edit`)}
+                        onClick={() => navigate(ROUTES.RECRUITER_JOB_EDIT(job._id))}
                         className="flex w-full items-center gap-2 px-4 py-2 text-left text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950"
                       >
                         <Edit2 className="w-4 h-4" />
                         Edit job
                       </button>
                       <button
-                        onClick={() => navigate(`/admin/jobs/${job._id}/applicants`)}
+                        onClick={() => navigate(ROUTES.RECRUITER_JOB_APPLICANTS(job._id))}
                         className="flex w-full items-center gap-2 px-4 py-2 text-left text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950"
                       >
                         <Eye className="w-4 h-4" />
@@ -137,8 +133,7 @@ const AdminJobsTable = () => {
                         <XCircle className="w-4 h-4" />
                         Close job
                       </button>
-                    </div>
-                  )}
+                  </ActionMenu>
                 </td>
               </tr>
             ))
@@ -149,4 +144,4 @@ const AdminJobsTable = () => {
   );
 };
 
-export default AdminJobsTable;
+export default RecruiterJobsTable;

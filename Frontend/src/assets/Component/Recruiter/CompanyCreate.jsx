@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { COMPANY_API_END_POINT } from "../../../utils/constant";
 import { useDispatch } from "react-redux";
 import { setSingleCompany } from "../../../redux/companySlice";
+import { ROUTES } from "../../../routes/paths";
+import { createCompany } from "../../../services/companyService";
 
 const CompanyCreate = () => {
   const navigate = useNavigate();
@@ -23,21 +23,14 @@ const CompanyCreate = () => {
 
     try {
       // console.log("Register payload:", { companyName });
-      const res = await axios.post(
-        `${COMPANY_API_END_POINT}/register`,
-        { name: companyName },
-        {
-          headers: { "Content-Type": "application/json" },
-          withCredentials: true,
-        }
-      );
+      const res = await createCompany({ name: companyName });
       // console.log("Register response:", res.data);
 
       if (res.data?.success) {
         dispatch(setSingleCompany(res.data.company));
         const companyId = res.data.company?._id;
         if (companyId) {
-          navigate(`/recruiter/companies/${companyId}`);
+          navigate(ROUTES.RECRUITER_COMPANY_DETAIL(companyId));
         } else {
           setError("Company created, but ID not found. Please try again.");
         }
@@ -90,7 +83,7 @@ const CompanyCreate = () => {
           <div className="flex items-center gap-4 mt-6">
             <button
               className="px-5 py-2 border border-gray-300 rounded-md font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all"
-              onClick={() => navigate("/admin/companies")}
+              onClick={() => navigate(ROUTES.RECRUITER_COMPANIES)}
               disabled={isLoading}
             >
               Cancel

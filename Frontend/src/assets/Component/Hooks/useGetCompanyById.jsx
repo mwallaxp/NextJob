@@ -1,9 +1,7 @@
-import api from "../../../utils/api";
 import React, { useEffect } from "react";
-import { COMPANY_API_END_POINT } from "../../../utils/constant";
 import { useDispatch } from "react-redux";
-import { setAllJobs } from "../../../redux/jobSlice";
 import { setSingleCompany } from "../../../redux/companySlice";
+import { getCompanyById } from "../../../services/companyService";
 
 export const useGetCompanyById = (ComapanyId) => {
   const dispatch = useDispatch(); // Invoke useDispatch to get the dispatch function
@@ -11,9 +9,7 @@ export const useGetCompanyById = (ComapanyId) => {
   useEffect(() => {
     const fetchSingleCompany = async () => {
       try {
-        const res = await api.get(
-          `${COMPANY_API_END_POINT}/get/${ComapanyId}`
-        );
+        const res = await getCompanyById(ComapanyId);
         console.log(res.data.company);
         if (res.data.success) {
           dispatch(setSingleCompany(res.data.company)); // Dispatch the action with the jobs data

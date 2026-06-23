@@ -6,6 +6,7 @@ import { USER_API_END_POINT } from "../../../utils/constant";
 import api from "../../../utils/api"; // Ensure api is imported
 import { useAuth } from "./AuthContext";
 import { toast } from 'react-toastify';
+import { ROUTES } from "../../../routes/paths";
 
 const NavBar = () => {
   const { user } = useSelector(store => store.auth);
@@ -41,11 +42,11 @@ const NavBar = () => {
       if (isShadowMode) {
         await exitShadowMode();
         toast.info("Exited shadow mode.");
-        navigate("/admin");
+        navigate(ROUTES.RECRUITER);
       } else {
         await logout();
         toast.success("LogOut successful!");
-        navigate("/"); 
+        navigate(ROUTES.HOME); 
       }
     } catch (error) {
       console.error("Logout failed:", error);
@@ -61,9 +62,9 @@ const NavBar = () => {
   const getNavLinks = () => {
     if (user && user.role === 'recruiter') {
       return [
-        { to: "/admin", label: "Dashboard" },
-        { to: "/admin/companies", label: "Companies" },
-        { to: "/admin/jobs", label: "Jobs" }
+        { to: ROUTES.RECRUITER, label: "Dashboard" },
+        { to: ROUTES.RECRUITER_COMPANIES, label: "Companies" },
+        { to: ROUTES.RECRUITER_JOBS, label: "Jobs" }
       ];
     }
     if (user && user.role === 'student') {

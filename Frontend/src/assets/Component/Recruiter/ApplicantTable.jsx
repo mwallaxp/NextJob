@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
-import axios from 'axios'
-import { APPLICATION_API_END_POINT } from '../../../utils/constant'
+import { updateApplicationStatus } from '../../../services/applicationService'
 
 const shortListingStatus = ['Accepted', 'Rejected']
 
@@ -14,14 +13,7 @@ const ApplicantTable = () => {
     try {
       setIsUpdating(true)
       
-      const res = await axios.post(
-        `${APPLICATION_API_END_POINT}/status/${id}/update`, 
-        { status }, 
-        { 
-          headers: { 'Content-Type': 'application/json' },
-          withCredentials: true 
-        }
-      )
+      const res = await updateApplicationStatus(id, status)
 
       if (res.data.success) {
         console.log('Status update successful')

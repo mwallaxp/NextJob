@@ -1,8 +1,7 @@
-import api from '../../../utils/api';
 import React, { useEffect } from 'react';
-import { COMPANY_API_END_POINT, } from '../../../utils/constant';
 import { useDispatch } from 'react-redux';
 import { setCompanies } from '../../../redux/companySlice';
+import { getRecruiterCompanies } from '../../../services/companyService';
 
 export const useGetAllCompanies = () => {
     const dispatch = useDispatch(); // Invoke useDispatch to get the dispatch function
@@ -11,7 +10,7 @@ export const useGetAllCompanies = () => {
         const fetchCompanies
          = async () => {
             try {
-                const res = await api.get(`${COMPANY_API_END_POINT}/get`);
+                const res = await getRecruiterCompanies();
                 if (res.data.success) {
                     dispatch(setCompanies(res.data.companies)); // Dispatch the action with the companies data
                 }

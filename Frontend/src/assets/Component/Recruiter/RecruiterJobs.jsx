@@ -2,23 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import useGetAllAdminJobs from "../Hooks/useGetAllAdminJobs";
-import AdminJobsTable from './AdminJobsTable'
+import RecruiterJobsTable from './RecruiterJobsTable'
 import { setSearchJobByText } from "../../../redux/jobSlice";
 import { Briefcase, CheckCircle2, Plus, Search, Users } from "lucide-react";
+import { ROUTES } from "../../../routes/paths";
+import PageHeader from "../../../components/recruiter/PageHeader";
+import StatTile from "../../../components/recruiter/StatTile";
 
-const MiniStat = ({ icon, label, value }) => (
-  <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
-    <div className="flex items-center gap-3">
-      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-950 text-white">{icon}</div>
-      <div>
-        <p className="text-xl font-semibold text-zinc-950">{value}</p>
-        <p className="text-xs font-medium text-zinc-500">{label}</p>
-      </div>
-    </div>
-  </div>
-);
-
-const AdminJobs = () => {
+const RecruiterJobs = () => {
   const [input, setInput]=useState("")
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
@@ -40,27 +31,26 @@ useEffect(()=>{
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-5 border-b border-zinc-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-zinc-500">Job postings</p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-950">Manage openings</h1>
-          <p className="mt-3 max-w-2xl text-zinc-500">Search roles, check applicant volume, and move candidates from review to decision.</p>
-        </div>
-
-        <button
-          type="button"
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
-          onClick={() => navigate("/admin/jobs/create")}
-        >
-          <Plus size={16} />
-          New job
-        </button>
-      </div>
+      <PageHeader
+        eyebrow="Job postings"
+        title="Manage openings"
+        description="Search roles, check applicant volume, and move candidates from review to decision."
+        actions={(
+          <button
+            type="button"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
+            onClick={() => navigate(ROUTES.RECRUITER_JOB_CREATE)}
+          >
+            <Plus size={16} />
+            New job
+          </button>
+        )}
+      />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <MiniStat icon={<Briefcase size={17} />} label="Total posts" value={allAdminJobs.length} />
-        <MiniStat icon={<CheckCircle2 size={17} />} label="Active posts" value={metrics.active} />
-        <MiniStat icon={<Users size={17} />} label="Applicants" value={metrics.applicants} />
+        <StatTile icon={<Briefcase size={17} />} label="Total posts" value={allAdminJobs.length} />
+        <StatTile icon={<CheckCircle2 size={17} />} label="Active posts" value={metrics.active} tone="soft" />
+        <StatTile icon={<Users size={17} />} label="Applicants" value={metrics.applicants} tone="soft" />
       </div>
 
       <div className="flex flex-wrap gap-4 justify-between items-center">
@@ -84,7 +74,7 @@ useEffect(()=>{
           <option value="paused">Paused</option>
           <option value="closed">Closed</option>
         </select>
-        <AdminJobsTable/>
+        <RecruiterJobsTable/>
         <div className="flex w-full items-center justify-between gap-3 text-sm text-zinc-500">
           <span>{meta.total} jobs found</span>
           <div className="flex items-center gap-2">
@@ -112,4 +102,4 @@ useEffect(()=>{
   );
 };
 
-export default AdminJobs;
+export default RecruiterJobs;

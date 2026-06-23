@@ -1,9 +1,7 @@
-import api from "../../../utils/api";
 import { useEffect } from "react";
-import React from 'react'
 import { useDispatch } from "react-redux";
-import { APPLICATION_API_END_POINT } from "../../../utils/constant";
 import { setAllAppliedJobs } from "../../../redux/jobSlice";
+import { getAppliedJobs } from "../../../services/applicationService";
 
 const useGetAppliedJobs = () => {
     const dispatch =useDispatch()
@@ -11,7 +9,7 @@ const useGetAppliedJobs = () => {
     useEffect (()=>{
         const fectAppliedJob = async () =>{
             try {
-                const res = await api.get(`${APPLICATION_API_END_POINT}/get`)
+                const res = await getAppliedJobs()
                 if(res.data.success)
                     console.log("succesfull")
                 dispatch(setAllAppliedJobs(res.data.applications))

@@ -6,6 +6,7 @@ import { setLoading, setUser } from "../../../redux/authSlice";
 import { toast } from 'react-toastify';
 import { USER_API_END_POINT } from "../../../utils/constant";
 import { Shield, Mail, Lock, User, Building } from "lucide-react";
+import { ROUTES } from "../../../routes/paths";
 
 const Login = () => {
   const [input, setInput] = useState({
@@ -21,7 +22,7 @@ const Login = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      const destination = user.role === 'recruiter' ? '/admin' : '/';
+      const destination = user.role === 'recruiter' ? ROUTES.RECRUITER : ROUTES.HOME;
       navigate(destination);
     }
   }, [user, navigate]);
@@ -86,7 +87,7 @@ const Login = () => {
         }
         dispatch(setUser(response.data.user));
         toast.success("Login successful!");
-        const destination = response.data.user.role === 'recruiter' ? '/admin' : '/';
+        const destination = response.data.user.role === 'recruiter' ? ROUTES.RECRUITER : ROUTES.HOME;
         navigate(destination);
       }
     } catch (error) {

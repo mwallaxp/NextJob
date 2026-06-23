@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { ArrowLeft, Upload, CheckCircle, AlertCircle, Building, Globe, MapPin, FileText } from "lucide-react";
-import axios from "axios";
-import { COMPANY_API_END_POINT } from "../../../utils/constant";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import useGetCompanyById from "../Hooks/useGetCompanyById";
+import { ROUTES } from "../../../routes/paths";
+import { updateCompany } from "../../../services/companyService";
 
 const CompanySetUp = () => {
   const params = useParams();
@@ -117,20 +117,11 @@ const CompanySetUp = () => {
 
     try {
       setLoading(true);
-      const res = await axios.put(
-        `${COMPANY_API_END_POINT}/update/${params.id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true,
-        }
-      );
+      const res = await updateCompany(params.id, formData);
       if (res.data.success) {
         setShowSuccessMessage(true);
         setTimeout(() => {
-          navigate("/recruiter/companies");
+          navigate(ROUTES.RECRUITER_COMPANIES);
         }, 2000);
       }
     } catch (error) {
@@ -393,7 +384,7 @@ const CompanySetUp = () => {
       <div className="max-w-3xl mx-auto my-10 px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-center space-x-2">
           <button // Back button
-            onClick={() => navigate("/admin/companies")}
+            onClick={() => navigate(ROUTES.RECRUITER_COMPANIES)}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-800 font-medium transition-colors p-2 rounded-full hover:bg-gray-100"
           >
             <ArrowLeft size={20} />

@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api from '../../../utils/api';
-import { APPLICATION_API_END_POINT } from '../../../utils/constant';
 import { 
   Card, 
   Badge, 
@@ -11,6 +9,8 @@ import {
 } from "../../../components/DesignSystem";
 import { ArrowLeft, Mail, Phone, Target, Check, X, Download, Sparkles } from "lucide-react";
 import { toast } from 'react-toastify';
+import { ROUTES } from '../../../routes/paths';
+import { getJobApplicantsLegacy, updateApplicationStatus } from '../../../services/applicationService';
 
 const JobApplicants = () => {
   const { id: jobId } = useParams();
@@ -24,7 +24,7 @@ const JobApplicants = () => {
     const fetchApplicants = async () => {
       try {
         setLoading(true);
-        const res = await api.get(`${APPLICATION_API_END_POINT}/${jobId}/applicants`);
+        const res = await getJobApplicantsLegacy(jobId);
         if (res.data.success) {
           setApplicants(res.data.job.applications);
           setJobTitle(res.data.job.title);
@@ -54,7 +54,7 @@ const JobApplicants = () => {
     ));
 
     try {
-      const res = await api.post(`${APPLICATION_API_END_POINT}/status/${applicationId}/update`, { status });
+      const res = await updateApplicationStatus(applicationId, status);
       if (res.data.success) {
         toast.success(`Application ${status}`);
       }
@@ -69,7 +69,7 @@ const JobApplicants = () => {
     <main className="min-h-screen bg-black-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <button 
-          onClick={() => navigate('/admin/jobs')} // Navigate back to the job postings list
+          onClick={() => navigate(ROUTES.RECRUITER_JOBS)}
           className="flex items-center gap-2 text-black-600 hover:text-orange-600 transition-colors mb-6 font-semibold"
         >
           <ArrowLeft size={20} />

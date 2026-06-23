@@ -12,21 +12,11 @@ import {
   Search,
   Users,
 } from "lucide-react";
+import { ROUTES } from "../../../routes/paths";
+import StatTile from "../../../components/recruiter/StatTile";
+import EmptyState from "../../../components/recruiter/EmptyState";
 
-const StatTile = ({ icon, label, value, tone = "dark" }) => (
-  <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-    <div className="flex items-center justify-between">
-      <div className={`flex h-10 w-10 items-center justify-center rounded-full ${tone === "dark" ? "bg-zinc-950 text-white" : "bg-zinc-100 text-zinc-950"}`}>
-        {icon}
-      </div>
-      <ArrowUpRight size={18} className="text-zinc-400" />
-    </div>
-    <p className="mt-6 text-3xl font-semibold tracking-tight text-zinc-950">{value}</p>
-    <p className="mt-1 text-sm font-medium text-zinc-500">{label}</p>
-  </div>
-);
-
-const AdminDashboard = () => {
+const RecruiterDashboard = () => {
   useGetAllAdminJobs();
   useGetAllCompanies();
 
@@ -52,14 +42,14 @@ const AdminDashboard = () => {
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
-              to="/admin/jobs/create"
+              to={ROUTES.RECRUITER_JOB_CREATE}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
             >
               <Plus size={16} />
               Post job
             </Link>
             <Link
-              to="/admin/companies/create"
+              to={ROUTES.RECRUITER_COMPANY_CREATE}
               className="inline-flex items-center justify-center gap-2 rounded-full border border-zinc-300 px-5 py-3 text-sm font-semibold text-zinc-950 transition hover:border-zinc-950"
             >
               <Building2 size={16} />
@@ -99,7 +89,7 @@ const AdminDashboard = () => {
               <h2 className="text-lg font-semibold text-zinc-950">Recent job posts</h2>
               <p className="text-sm text-zinc-500">Newest openings and applicant volume.</p>
             </div>
-            <Link to="/admin/jobs" className="text-sm font-semibold text-zinc-950 underline-offset-4 hover:underline">
+            <Link to={ROUTES.RECRUITER_JOBS} className="text-sm font-semibold text-zinc-950 underline-offset-4 hover:underline">
               View all
             </Link>
           </div>
@@ -107,9 +97,11 @@ const AdminDashboard = () => {
           <div className="divide-y divide-zinc-100">
             {latestJobs.length === 0 ? (
               <div className="p-8 text-center">
-                <Briefcase className="mx-auto h-8 w-8 text-zinc-300" />
-                <p className="mt-3 font-semibold text-zinc-950">No jobs posted yet</p>
-                <p className="mt-1 text-sm text-zinc-500">Create your first job post to start collecting applicants.</p>
+                <EmptyState
+                  icon={Briefcase}
+                  title="No jobs posted yet"
+                  description="Create your first job post to start collecting applicants."
+                />
               </div>
             ) : (
               latestJobs.map((job) => (
@@ -123,7 +115,7 @@ const AdminDashboard = () => {
                       {job.applications?.length || 0} applicants
                     </span>
                     <Link
-                      to={`/admin/jobs/${job._id}/applicants`}
+                      to={ROUTES.RECRUITER_JOB_APPLICANTS(job._id)}
                       className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-zinc-950 text-white transition hover:bg-zinc-800"
                       title="View applicants"
                     >
@@ -155,10 +147,10 @@ const AdminDashboard = () => {
               <h2 className="font-semibold text-zinc-950">Fast actions</h2>
             </div>
             <div className="mt-5 grid gap-3">
-              <Link to="/recruiter/jobs/create" className="rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:border-zinc-950">
+              <Link to={ROUTES.RECRUITER_JOB_CREATE} className="rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:border-zinc-950">
                 Publish another opening
               </Link>
-              <Link to="/admin/companies" className="rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:border-zinc-950">
+              <Link to={ROUTES.RECRUITER_COMPANIES} className="rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:border-zinc-950">
                 Manage company profiles
               </Link>
             </div>
@@ -169,4 +161,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+export default RecruiterDashboard;

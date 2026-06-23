@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import useGetAppliedJobs from "./Hooks/useGetAppliedJobs";
 import { Card, StatCard, ProgressBar, ButtonPrimary, Badge, EmptyState, SectionHeader } from "../../components/DesignSystem";
 import { Briefcase, TrendingUp, CheckCircle, Clock, AlertCircle, Zap, Target, User, Download, Share2 } from "lucide-react";
+import { ROUTES } from "../../routes/paths";
 
 const Dashboard = () => {
   const { user } = useSelector((store) => store.auth);
@@ -15,12 +16,12 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!user) {
-      navigate("/login", { replace: true });
+      navigate(ROUTES.LOGIN, { replace: true });
       return;
     }
 
     if (user.role === "recruiter") {
-      navigate("/admin", { replace: true }); // Redirect recruiters to the unified admin/recruiter dashboard
+      navigate(ROUTES.RECRUITER, { replace: true });
     }
   }, [user, navigate]);
 
