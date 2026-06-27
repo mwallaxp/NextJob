@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate, useLocation } from 'react-router-dom';
-import { ROUTES } from '../../../routes/paths';
+import { getDashboardRouteForRole } from '../../../routes/paths';
 
 /**
  * ProtectedRoute handles authentication and role-based authorization.
@@ -23,11 +23,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     // If user doesn't have the right role, send them to their primary dashboard
     // This prevents the "shaking" UI caused by competing redirects
-    const redirectPath = user.role === 'recruiter' 
-      ? ROUTES.RECRUITER 
-      : ROUTES.STUDENT_DASHBOARD;
-    
-    return <Navigate to={redirectPath} replace />;
+    return <Navigate to={getDashboardRouteForRole(user.role)} replace />;
   }
 
   return children;

@@ -108,11 +108,11 @@ const Navbar = () => {
                       My Profile
                     </Link>
                     <Link
-                      to="/settings"
+                      to="/profile"
                       className="flex items-center gap-2 px-4 py-3 hover:opacity-90 transition"
                     >
                       <Settings size={18} />
-                      Settings
+                      Edit Profile
                     </Link>
                     <button
                       onClick={handleLogout}

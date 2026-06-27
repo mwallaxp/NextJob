@@ -1,4 +1,5 @@
 import Payment from "../modules/payment.model.js";
+import Job from "../modules/job.model.js";
 import Stripe from "stripe";
 import catchAsync from "../catchAsync.js";
 import AppError from "../AppError.js";
@@ -9,10 +10,22 @@ const stripeClient = process.env.STRIPE_SECRET_KEY
 
 // Create payment intent
 export const createPaymentIntent = catchAsync(async (req, res) => {
-    const { jobId, clientId, freelancerId, amount, description } = req.body;
+    const { jobId, freelancerId, amount, description } = req.body;
+
+    if (!stripeClient) {
+        throw new AppError("Stripe is not configured", 503);
+    }
 
     if (!amount || amount <= 0) {
         throw new AppError("Invalid amount", 400);
+    }
+
+    const job = await Job.findById(jobId);
+    if (!job) {
+        throw new AppError("Job not found", 404);
+    }
+    if (req.role !== "admin" && String(job.created_by) !== String(req.id)) {
+        throw new AppError("You can only create payments for your own jobs", 403);
     }
 
     const paymentIntent = await stripeClient.paymentIntents.create({
@@ -20,7 +33,7 @@ export const createPaymentIntent = catchAsync(async (req, res) => {
         currency: "usd",
         metadata: {
             jobId,
-            clientId,
+            clientId: String(req.id),
             freelancerId
         },
         description
@@ -28,7 +41,7 @@ export const createPaymentIntent = catchAsync(async (req, res) => {
 
     const payment = await Payment.create({
         jobId,
-        clientId,
+        clientId: req.id,
         freelancerId,
         amount,
         currency: "USD",
@@ -48,6 +61,18 @@ export const createPaymentIntent = catchAsync(async (req, res) => {
 // Confirm payment
 export const confirmPayment = catchAsync(async (req, res) => {
     const { paymentIntentId, paymentId } = req.body;
+
+    if (!stripeClient) {
+        throw new AppError("Stripe is not configured", 503);
+    }
+
+    const payment = await Payment.findById(paymentId);
+    if (!payment) {
+        throw new AppError("Payment not found", 404);
+    }
+    if (![payment.clientId, payment.freelancerId].some((id) => String(id) === String(req.id)) && req.role !== "admin") {
+        throw new AppError("You can only confirm payments connected to your account", 403);
+    }
 
     const paymentIntent = await stripeClient.paymentIntents.retrieve(paymentIntentId);
 
@@ -71,6 +96,10 @@ export const getPaymentHistory = catchAsync(async (req, res) => {
     const { userId } = req.params;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+
+    if (req.role !== "admin" && String(userId) !== String(req.id)) {
+        throw new AppError("You can only view your own payment history", 403);
+    }
 
     const payments = await Payment.find({
         $or: [{ clientId: userId }, { freelancerId: userId }]
@@ -98,6 +127,10 @@ export const getPaymentHistory = catchAsync(async (req, res) => {
 export const processRefund = catchAsync(async (req, res) => {
     const { paymentId, reason, amount } = req.body;
 
+    if (!stripeClient) {
+        throw new AppError("Stripe is not configured", 503);
+    }
+
     const payment = await Payment.findById(paymentId);
     if (!payment) {
         throw new AppError("Payment not found", 404);
@@ -105,6 +138,9 @@ export const processRefund = catchAsync(async (req, res) => {
 
     if (payment.status !== "succeeded") {
         throw new AppError("Can only refund succeeded payments", 400);
+    }
+    if (req.role !== "admin" && String(payment.clientId) !== String(req.id)) {
+        throw new AppError("Only the payer or an admin can refund this payment", 403);
     }
 
     const refund = await stripeClient.refunds.create({

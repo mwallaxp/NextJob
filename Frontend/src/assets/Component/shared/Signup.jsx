@@ -408,7 +408,7 @@ const Signup = () => {
                     onClick={() => handleChange({ target: { name: "role", value: "candidate" } })}
                   >
                     <User size={18} />
-                    <span className="font-medium">Candidate</span>
+                    <span className="font-medium">Employee</span>
                     <input
                       type="radio"
                       name="role"

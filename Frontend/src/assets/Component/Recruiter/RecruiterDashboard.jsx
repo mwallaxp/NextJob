@@ -26,8 +26,11 @@ const RecruiterDashboard = () => {
 
   const totalApplicants = allAdminJobs.reduce((count, job) => count + (job.applications?.length || 0), 0);
   const activeJobs = allAdminJobs.filter((job) => !job.status || job.status === "active").length;
+  const pausedJobs = allAdminJobs.filter((job) => job.status === "paused").length;
+  const closedJobs = allAdminJobs.filter((job) => job.status === "closed").length;
   const latestJobs = allAdminJobs.slice(0, 5);
   const averageApplicants = allAdminJobs.length ? Math.round(totalApplicants / allAdminJobs.length) : 0;
+  const jobsWithApplicants = allAdminJobs.filter((job) => (job.applications?.length || 0) > 0).length;
 
   return (
     <div className="space-y-8 bg-white">
@@ -111,9 +114,14 @@ const RecruiterDashboard = () => {
                     <p className="mt-1 text-sm text-zinc-500">{job.company?.name || "Company not set"} - {job.location}</p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700">
-                      {job.applications?.length || 0} applicants
-                    </span>
+                    <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700">{job.status || "active"}</span>
+                    <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700">{job.applications?.length || 0} applicants</span>
+                    <Link
+                      to={ROUTES.RECRUITER_JOB_EDIT(job._id)}
+                      className="rounded-full border border-zinc-200 px-3 py-2 text-xs font-semibold text-zinc-950 transition hover:border-zinc-950"
+                    >
+                      Edit
+                    </Link>
                     <Link
                       to={ROUTES.RECRUITER_JOB_APPLICANTS(job._id)}
                       className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-zinc-950 text-white transition hover:bg-zinc-800"
@@ -132,12 +140,21 @@ const RecruiterDashboard = () => {
           <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
             <div className="flex items-center gap-3">
               <Search className="h-5 w-5 text-zinc-950" />
-              <h2 className="font-semibold text-zinc-950">Recommended next steps</h2>
+              <h2 className="font-semibold text-zinc-950">Applicant pipeline</h2>
             </div>
-            <div className="mt-5 space-y-4 text-sm text-zinc-600">
-              <p>Keep salary ranges visible on every post to improve applicant quality.</p>
-              <p>Add focused skills to each job so the applicant match score has useful data.</p>
-              <p>Review pending applicants daily and move them to shortlisted or rejected quickly.</p>
+            <div className="mt-5 grid gap-3 text-sm">
+              <div className="flex items-center justify-between rounded-xl bg-white p-3">
+                <span className="text-zinc-500">Jobs with applicants</span>
+                <strong className="text-zinc-950">{jobsWithApplicants}</strong>
+              </div>
+              <div className="flex items-center justify-between rounded-xl bg-white p-3">
+                <span className="text-zinc-500">Paused jobs</span>
+                <strong className="text-zinc-950">{pausedJobs}</strong>
+              </div>
+              <div className="flex items-center justify-between rounded-xl bg-white p-3">
+                <span className="text-zinc-500">Closed jobs</span>
+                <strong className="text-zinc-950">{closedJobs}</strong>
+              </div>
             </div>
           </div>
 

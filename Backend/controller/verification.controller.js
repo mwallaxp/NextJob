@@ -2,9 +2,16 @@ import Verification from "../modules/verification.model.js";
 import catchAsync from "../catchAsync.js";
 import AppError from "../AppError.js";
 
+const canAccessUserVerification = (req, userId) => {
+    return req.role === "admin" || String(req.id) === String(userId);
+};
+
 // Create verification record
 export const initializeVerification = catchAsync(async (req, res) => {
     const { userId } = req.params;
+    if (!canAccessUserVerification(req, userId)) {
+        throw new AppError("You can only initialize your own verification", 403);
+    }
 
     let verification = await Verification.findOne({ userId });
 
@@ -24,6 +31,9 @@ export const initializeVerification = catchAsync(async (req, res) => {
 // Get verification status
 export const getVerificationStatus = catchAsync(async (req, res) => {
     const { userId } = req.params;
+    if (!canAccessUserVerification(req, userId)) {
+        throw new AppError("You can only view your own verification status", 403);
+    }
 
     const verification = await Verification.findOne({ userId });
 
@@ -40,6 +50,9 @@ export const getVerificationStatus = catchAsync(async (req, res) => {
 // Verify email (in production, send verification email first)
 export const verifyEmail = catchAsync(async (req, res) => {
     const { userId } = req.params;
+    if (!canAccessUserVerification(req, userId)) {
+        throw new AppError("You can only verify your own email", 403);
+    }
 
     const verification = await Verification.findOneAndUpdate(
         { userId },
@@ -63,6 +76,9 @@ export const verifyEmail = catchAsync(async (req, res) => {
 // Verify phone
 export const verifyPhone = catchAsync(async (req, res) => {
     const { userId } = req.params;
+    if (!canAccessUserVerification(req, userId)) {
+        throw new AppError("You can only verify your own phone", 403);
+    }
 
     const verification = await Verification.findOneAndUpdate(
         { userId },
@@ -87,6 +103,9 @@ export const verifyPhone = catchAsync(async (req, res) => {
 export const submitIdentityVerification = catchAsync(async (req, res) => {
     const { userId } = req.params;
     const { identityDocument, identificationId } = req.body;
+    if (!canAccessUserVerification(req, userId)) {
+        throw new AppError("You can only submit your own identity verification", 403);
+    }
 
     if (!identityDocument) {
         throw new AppError("Identity document is required", 400);

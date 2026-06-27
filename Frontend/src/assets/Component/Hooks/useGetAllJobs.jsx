@@ -3,13 +3,15 @@ import { useDispatch } from "react-redux";
 import { setAllJobs } from "../../../redux/jobSlice";
 import { getAllJobs } from "../../../services/jobService";
 
-const useGetAllJobs = () => {
+const useGetAllJobs = (params = {}) => {
   const dispatch = useDispatch();
+  const paramsKey = JSON.stringify(params);
 
   useEffect(() => {
+    const stableParams = JSON.parse(paramsKey);
     const fetchAllJobs = async () => {
       try {
-        const res = await getAllJobs();
+        const res = await getAllJobs(stableParams);
 
         if (res.data.success) {
           dispatch(setAllJobs(res.data.jobs));
@@ -21,7 +23,7 @@ const useGetAllJobs = () => {
     };
 
     fetchAllJobs();
-  }, [dispatch]);
+  }, [dispatch, paramsKey]);
 };
 
 export default useGetAllJobs;

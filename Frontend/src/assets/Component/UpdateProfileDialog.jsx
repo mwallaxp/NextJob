@@ -1,14 +1,14 @@
 import { Loader2 } from "lucide-react";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
 import { setUser } from "../../redux/authSlice";
 import { USER_API_END_POINT } from "../../utils/constant";
 import { toast } from "react-toastify";
+import api from "../../utils/api";
 
 const UpdateProfileDialog = ({ open, setOpen }) => {
   const [loading, setLoading] = useState(false);
-  const user = useSelector((store) => store.auth);
+  const { user } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
 
   const [input, setInput] = useState({
@@ -44,26 +44,23 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
 
     try {
       setLoading(true)
-      const res = await axios.post(     
+      const res = await api.post(
         `${USER_API_END_POINT}/profile/update`,
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-          withCredentials:
-           true,
+          withCredentials: true,
         }
       );
 
       if (res.data.success) {
         dispatch(setUser(res.data.user));
         toast.success(res.data.message);
-        alert("sucessfull update")
         setOpen(false);
       }
     } catch (error) {
-      console.log("Error updating profile:", error);
        toast.error(error.response?.data?.message || "An error occurred");
     } finally {
       setLoading(false);

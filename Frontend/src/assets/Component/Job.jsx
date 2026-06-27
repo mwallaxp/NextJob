@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Bookmark, Building2, MapPin } from "lucide-react";
+import { useSelector } from "react-redux";
+import { toggleSavedJob as toggleSavedJobRequest } from "../../services/userService";
 
 const Job = ({ job }) => {
   const navigate = useNavigate();
+  const { user } = useSelector((store) => store.auth);
   const [savedJobs, setSavedJobs] = useState([]);
 
   const displayCreatedDate = (createdAt) => {
@@ -16,20 +19,34 @@ const Job = ({ job }) => {
   };
 
   useEffect(() => {
-    const stored = window.localStorage.getItem("nextjobSavedJobs") || "[]";
-    setSavedJobs(JSON.parse(stored));
-  }, []);
+    const stored = JSON.parse(window.localStorage.getItem("nextjobSavedJobs") || "[]");
+    const accountSaved = (user?.savedJobs || []).map((savedJob) => savedJob?._id || savedJob);
+    setSavedJobs(Array.from(new Set([...stored, ...accountSaved])));
+  }, [user]);
 
-  const toggleSavedJob = () => {
+  const toggleSavedJob = async () => {
     const jobId = job?._id || job?.id;
     if (!jobId) return;
 
-    const nextSaved = savedJobs.includes(jobId)
+    const optimisticSaved = savedJobs.includes(jobId)
       ? savedJobs.filter((id) => id !== jobId)
       : [...savedJobs, jobId];
 
-    setSavedJobs(nextSaved);
-    window.localStorage.setItem("nextjobSavedJobs", JSON.stringify(nextSaved));
+    setSavedJobs(optimisticSaved);
+    window.localStorage.setItem("nextjobSavedJobs", JSON.stringify(optimisticSaved));
+
+    if (!user) return;
+
+    try {
+      const res = await toggleSavedJobRequest(jobId);
+      if (res.data?.savedJobIds) {
+        setSavedJobs(res.data.savedJobIds);
+        window.localStorage.setItem("nextjobSavedJobs", JSON.stringify(res.data.savedJobIds));
+      }
+    } catch {
+      setSavedJobs(savedJobs);
+      window.localStorage.setItem("nextjobSavedJobs", JSON.stringify(savedJobs));
+    }
   };
 
   const isSaved = job && savedJobs.includes(job._id || job.id);
@@ -42,8 +59,13 @@ const Job = ({ job }) => {
     <article className="flex h-full flex-col rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl">
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm font-medium text-slate-500">{displayCreatedDate(job.createdAt)}</p>
-        <button className="rounded-full p-2 text-slate-500 hover:bg-slate-100 hover:text-blue-600" aria-label="Save job">
-          <Bookmark className="h-5 w-5" />
+        <button
+          type="button"
+          onClick={toggleSavedJob}
+          className={`rounded-full p-2 hover:bg-slate-100 hover:text-blue-600 ${isSaved ? "text-blue-600" : "text-slate-500"}`}
+          aria-label={isSaved ? "Remove saved job" : "Save job"}
+        >
+          <Bookmark className={`h-5 w-5 ${isSaved ? "fill-current" : ""}`} />
         </button>
       </div>
       <div className="flex items-center gap-3 mb-4">

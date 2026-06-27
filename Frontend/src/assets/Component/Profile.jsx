@@ -1,117 +1,132 @@
-import React, { useState } from "react";
-import {
-  MailIcon,
-  Pen,
-  Contact2Icon,
-} from "lucide-react";
+import { useMemo, useState } from "react";
+import { Briefcase, CalendarCheck, Contact2Icon, FileText, MailIcon, MapPin, Pen, UserRound } from "lucide-react";
 import { ApplicationJobTable } from "./ApplicationJobTable";
 import UpdateProfileDialog from "./UpdateProfileDialog";
 import { useSelector } from "react-redux";
 import useGetAppliedJobs from "./Hooks/useGetAppliedJobs";
 
-const skill = ["HTML", "Java", "JavaScript", "Python", "Kotlin", "Pascal"];
-const isResume = true;
-
 const Profile = () => {
-  useGetAppliedJobs()
+  useGetAppliedJobs();
   const [open, setOpen] = useState(false);
-  const {user} =useSelector(store=>store.auth)
+  const { user } = useSelector((store) => store.auth);
+  const { allAppliedJobs } = useSelector((store) => store.job);
 
+  const completion = useMemo(() => {
+    const items = [
+      Boolean(user?.fullname),
+      Boolean(user?.profile?.bio),
+      Boolean(user?.profile?.resume),
+      Boolean(user?.profile?.skills?.length),
+      Boolean(user?.profile?.profilePhoto),
+    ];
+    return Math.round((items.filter(Boolean).length / items.length) * 100);
+  }, [user]);
+
+  const resumeReady = Boolean(user?.profile?.resume);
 
   return (
-    <div>
-      {/* Profile Section */}
-      <section className="max-w-7xl mx-auto bg-gray-50 border border-gray-200 shadow-md rounded-xl my-6 p-8">
-        <div className="flex justify-between items-center">
-          {/* Profile Info */}
-          <div className="flex items-center gap-6">
-            <div className="h-28 w-28">
-              <img
-                src={'../image/overprotocol.jpg'}
-                alt="Profile"
-                className="rounded-full object-cover"
-              />
+    <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex flex-col gap-5 sm:flex-row">
+              <div className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-100 text-slate-500">
+                {user?.profile?.profilePhoto ? (
+                  <img src={user.profile.profilePhoto} alt={user?.fullname || "Profile"} className="h-full w-full object-cover" />
+                ) : (
+                  <UserRound size={40} />
+                )}
+              </div>
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">Employee profile</p>
+                <h1 className="mt-2 text-3xl font-black text-slate-950">{user?.fullname || "Your name"}</h1>
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+                  {user?.profile?.bio || "Add a short professional bio so recruiters understand your strengths quickly."}
+                </p>
+                <div className="mt-4 flex flex-wrap gap-3 text-sm text-slate-600">
+                  <span className="inline-flex items-center gap-2"><MailIcon size={16} />{user?.email}</span>
+                  <span className="inline-flex items-center gap-2"><Contact2Icon size={16} />{user?.phonenumber || "Phone not set"}</span>
+                  <span className="inline-flex items-center gap-2"><MapPin size={16} />Preferred location not set</span>
+                </div>
+              </div>
             </div>
-            <div>
-              <h1 className="font-semibold text-2xl text-gray-800">{user?.fullname}</h1>
-              <p className="text-sm text-gray-600">
-                {user?.profile?.bio}
-             
-              </p>
+
+            <button
+              type="button"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+              onClick={() => setOpen(true)}
+            >
+              <Pen className="h-4 w-4" />
+              Edit profile
+            </button>
+          </div>
+        </section>
+
+        <section className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
+          <div className="space-y-6">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold text-slate-950">Profile completion</h2>
+                <span className="text-2xl font-black text-blue-600">{completion}%</span>
+              </div>
+              <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-100">
+                <div className="h-full rounded-full bg-blue-600" style={{ width: `${completion}%` }} />
+              </div>
+              <p className="mt-3 text-sm text-slate-500">Complete profiles are easier for recruiters to evaluate.</p>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-950">Resume</h2>
+              {resumeReady ? (
+                <a href={user.profile.resume} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-blue-700 hover:bg-blue-50">
+                  <FileText className="h-4 w-4" />
+                  {user?.profile?.resumeOriginalName || "View resume"}
+                </a>
+              ) : (
+                <p className="mt-4 text-sm text-slate-500">No resume uploaded yet.</p>
+              )}
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-950">Preferences</h2>
+              <div className="mt-4 space-y-3 text-sm text-slate-600">
+                <p className="flex items-center gap-2"><CalendarCheck size={16} />Availability not set</p>
+                <p className="flex items-center gap-2"><Briefcase size={16} />Preferred salary not set</p>
+              </div>
             </div>
           </div>
-          {/* Edit Profile */}
-          <button
-            className="text-gray-600 hover:text-gray-800"
-            onClick={() => setOpen(true)}
-          >
-            <Pen className="w-6 h-6" />
-          </button>
-        </div>
 
-        {/* Contact Information */}
-        <div className="mt-6 space-y-4">
-          <div className="flex items-center gap-4">
-            <MailIcon className="w-6 h-6 text-gray-500" />
-            <span className="text-gray-700 hover:text-blue-600 cursor-pointer">
-              {user?.email}
-              
-            </span>
+          <div className="space-y-6">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-950">Skills</h2>
+              {user?.profile?.skills?.length ? (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {user.profile.skills.map((skill) => (
+                    <span key={skill} className="rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-4 text-sm text-slate-500">No skills listed yet.</p>
+              )}
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-950">Application tracking</h2>
+                  <p className="text-sm text-slate-500">{allAppliedJobs?.length || 0} applications submitted</p>
+                </div>
+              </div>
+              <ApplicationJobTable />
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <Contact2Icon className="w-6 h-6 text-gray-500" />
-            <span className="text-gray-700">{user?.phonenumber}</span>
-          </div>
-        </div>
+        </section>
+      </div>
 
-        {/* Skills */}
-        <div className="mt-6">
-          <h2 className="font-semibold text-xl text-gray-800">Skills</h2>
-          <div className="flex flex-wrap gap-3 mt-2">
-            {user?.profile?.skills?.length != 0 ? (
-              user?.profile?.skills?.map((skill, index) => (
-                <span
-                  key={index}
-                  className="px-4 py-2 bg-gray-800 text-white text-sm rounded-full shadow"
-                >
-                  {skill}
-                </span>
-              ))
-            ) : (
-              <p className="text-sm text-gray-600">No skills listed.</p>
-            )}
-          </div>
-        </div>
-
-        {/* Resume */}
-        <div className="mt-6">
-          <h2 className="font-semibold text-xl text-gray-800">Resume</h2>
-          <div className="mt-2">
-            {isResume ? (
-              <a
-                href={user?.profile?.resume}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline text-sm"
-              >
-                {user?.profile?.resumeOriginalName}
-              </a>
-            ) : (
-              <p className="text-sm text-gray-600">No resume uploaded.</p>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Applied Jobs Section */}
-      <section className="max-w-7xl mx-auto bg-white shadow-md rounded-xl p-6 mt-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Applied Jobs</h2>
-        <ApplicationJobTable />
-      </section>
-
-      {/* Update Profile Dialog */}
       <UpdateProfileDialog open={open} setOpen={setOpen} />
-    </div>
+    </main>
   );
 };
 

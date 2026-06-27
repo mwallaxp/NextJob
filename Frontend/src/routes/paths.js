@@ -7,7 +7,7 @@ export const ROUTES = {
   JOBS: "/jobs",
   BROWSE: "/browse",
   PROFILE: "/profile",
-  STUDENT_DASHBOARD: "/dashboard",
+  EMPLOYEE_DASHBOARD: "/dashboard",
   SAVED_JOBS: "/saved",
   NOTIFICATIONS: "/notifications",
   ABOUT: "/about",
@@ -30,5 +30,5 @@ export const ROUTES = {
 export const getDashboardRouteForRole = (role) => {
   if (role === "recruiter") return ROUTES.RECRUITER;
   if (role === "admin") return ROUTES.ADMIN;
-  return ROUTES.STUDENT_DASHBOARD;
+  return ROUTES.EMPLOYEE_DASHBOARD;
 };

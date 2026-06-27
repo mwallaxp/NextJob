@@ -67,12 +67,12 @@ const NavBar = () => {
         { to: ROUTES.RECRUITER_JOBS, label: "Jobs" }
       ];
     }
-    if (user && user.role === 'student') {
+    if (user && user.role === 'candidate') {
       return [
-        { to: "/dashboard", label: "Dashboard" },
-        { to: "/jobs", label: "Jobs" },
-        { to: "/browse", label: "Browse" },
-        { to: "/saved", label: "Saved" }
+        { to: ROUTES.EMPLOYEE_DASHBOARD, label: "Dashboard" },
+        { to: ROUTES.JOBS, label: "Jobs" },
+        { to: ROUTES.BROWSE, label: "Browse" },
+        { to: ROUTES.SAVED_JOBS, label: "Saved" }
       ];
     }
     return [
@@ -187,7 +187,7 @@ const NavBar = () => {
                     </div>
                     
                     <div className="py-2">
-                      {user && user.role === "student" && (
+                      {user && user.role === "candidate" && (
                         <Link
                           to="/profile"
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 group"
@@ -307,7 +307,7 @@ const NavBar = () => {
               </div>
               
               <div className="mt-3 space-y-1">
-                {user && user.role === "student" && (
+                {user && user.role === "candidate" && (
                   <Link
                     to="/profile"
                     className="block px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-100"

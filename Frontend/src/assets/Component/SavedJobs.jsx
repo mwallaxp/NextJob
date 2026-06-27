@@ -1,23 +1,54 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { ArrowRight, Bookmark } from "lucide-react";
+import { Bookmark } from "lucide-react";
+import { getSavedJobs, toggleSavedJob } from "../../services/userService";
 
 const SavedJobs = () => {
   const { allJobs } = useSelector((store) => store.job);
+  const { user } = useSelector((store) => store.auth);
   const [savedIds, setSavedIds] = useState([]);
+  const [savedJobsFromApi, setSavedJobsFromApi] = useState([]);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem("nextjobSavedJobs") || "[]";
-    setSavedIds(JSON.parse(stored));
-  }, []);
+    const loadSavedJobs = async () => {
+      const stored = JSON.parse(window.localStorage.getItem("nextjobSavedJobs") || "[]");
+      setSavedIds(stored);
 
-  const savedJobs = allJobs?.filter((job) => savedIds.includes(job._id || job.id));
+      if (!user) return;
 
-  const removeSaved = (jobId) => {
+      try {
+        const res = await getSavedJobs();
+        const jobs = res.data.jobs || [];
+        setSavedJobsFromApi(jobs);
+        const ids = jobs.map((job) => job._id || job.id);
+        setSavedIds(ids);
+        window.localStorage.setItem("nextjobSavedJobs", JSON.stringify(ids));
+      } catch {
+        setSavedJobsFromApi([]);
+      }
+    };
+
+    loadSavedJobs();
+  }, [user]);
+
+  const savedJobs = savedJobsFromApi.length
+    ? savedJobsFromApi
+    : allJobs?.filter((job) => savedIds.includes(job._id || job.id));
+
+  const removeSaved = async (jobId) => {
     const nextSaved = savedIds.filter((id) => id !== jobId);
     setSavedIds(nextSaved);
+    setSavedJobsFromApi((jobs) => jobs.filter((job) => (job._id || job.id) !== jobId));
     window.localStorage.setItem("nextjobSavedJobs", JSON.stringify(nextSaved));
+
+    if (user) {
+      try {
+        await toggleSavedJob(jobId);
+      } catch {
+        setSavedIds(savedIds);
+      }
+    }
   };
 
   return (

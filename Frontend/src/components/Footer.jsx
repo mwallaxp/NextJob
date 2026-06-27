@@ -17,7 +17,7 @@ const Footer = () => {
               <span className="text-2xl font-bold">NextJob</span>
             </div>
             <p className="text-white/70 mb-6">
-              The platform for serious freelancers and quality work. Join thousands earning stable income on projects they love.
+              The platform for serious job seekers and quality employers. Join thousands building stable careers.
             </p>
             <div className="flex gap-4">
               <a href="#" className="text-white/70 hover:text-orange-500 transition">
@@ -35,9 +35,8 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* For Freelancers */}
           <div>
-            <h4 className="text-lg font-bold mb-4">For Freelancers</h4>
+            <h4 className="text-lg font-bold mb-4">For Employees</h4>
             <ul className="space-y-3">
               <li><Link to="/browse" className="text-white/70 hover:text-orange-500 transition">Browse Jobs</Link></li>
               <li><Link to="/" className="text-white/70 hover:text-orange-500 transition">How It Works</Link></li>
@@ -96,8 +95,8 @@ const Footer = () => {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div>
-              <h3 className="text-xl font-bold">Ready to land your next gig?</h3>
-              <p className="text-white/70 mt-1">Join 20,000+ freelancers already earning on NextJob</p>
+              <h3 className="text-xl font-bold">Ready to land your next role?</h3>
+              <p className="text-white/70 mt-1">Join 20,000+ job seekers growing with NextJob</p>
             </div>
             <button className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-all whitespace-nowrap">
               Start Applying Now

@@ -16,7 +16,7 @@ export const Footer = () => {
           <ul className="mt-4 space-y-2 text-sm text-slate-300">
             <li>Browse jobs</li>
             <li>Company directory</li>
-            <li>Candidate resources</li>
+            <li>Employee resources</li>
           </ul>
         </div>
 

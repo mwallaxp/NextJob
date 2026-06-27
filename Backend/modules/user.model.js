@@ -31,6 +31,10 @@ const userschema = mongoose.Schema({
         profilePhoto:{ type:String,
             default:""}
        },
+    savedJobs: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Job"
+    }],
     resetPasswordToken: String,
     resetPasswordExpires: Date,
 },{timestamps:true});

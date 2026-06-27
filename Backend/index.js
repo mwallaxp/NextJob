@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 import rateLimit from "express-rate-limit";
 import http from "http";
 import { Server } from "socket.io";
+import jwt from "jsonwebtoken";
+import User from "./modules/user.model.js";
 import connectDB from "./utility/db.js"
 import userRouter from "./routes/user.route.js"
 import companyRoute from "./routes/company.router.js";
@@ -55,6 +57,31 @@ const io = new Server(server, {
   }
 });
 
+io.use(async (socket, next) => {
+  try {
+    const authToken = socket.handshake.auth?.token;
+    const bearerToken = socket.handshake.headers?.authorization?.startsWith("Bearer ")
+      ? socket.handshake.headers.authorization.split(" ")[1]
+      : null;
+    const cookieToken = socket.handshake.headers?.cookie
+      ?.split(";")
+      .map((value) => value.trim())
+      .find((value) => value.startsWith("token="))
+      ?.split("=")[1];
+    const token = authToken || bearerToken || cookieToken;
+
+    if (!token) return next();
+
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
+    const userId = decoded.userId || decoded.id;
+    const user = await User.findById(userId).select("_id role fullname");
+    if (user) socket.user = user;
+    next();
+  } catch {
+    next();
+  }
+});
+
 app.use(helmet());
 app.use("/api", limiter); // Apply rate limiting to all API routes
 if (process.env.NODE_ENV === 'development') {
@@ -86,8 +113,10 @@ io.on("connection", (socket) => {
 
   // User joins their personal notification room based on ID
   socket.on("join-notifications", (userId) => {
-    socket.join(`user_${userId}`);
-    console.log(`User ${userId} joined notification room`);
+    const roomUserId = socket.user?._id || userId;
+    if (socket.user && String(userId) !== String(socket.user._id)) return;
+    socket.join(`user_${roomUserId}`);
+    console.log(`User ${roomUserId} joined notification room`);
   });
 
   // Join a conversation room for chat

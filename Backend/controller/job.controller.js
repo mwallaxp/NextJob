@@ -104,7 +104,18 @@ export const postJob = catchAsync(async (req, res, next) => {
 });
 
 export const getAllJobs = catchAsync(async (req, res, next) => {
-    const { keyword = "", page = 1, limit = 10, jobType, location } = req.query;
+    const {
+        keyword = "",
+        page = 1,
+        limit = 10,
+        jobType,
+        location,
+        salaryRange,
+        workMode,
+        experienceLevel,
+        sortBy = "newest",
+        status = "active",
+    } = req.query;
 
     // Pagination setup
     const pageNum = Math.max(1, Number(page) || 1);
@@ -112,23 +123,65 @@ export const getAllJobs = catchAsync(async (req, res, next) => {
     const skip = (pageNum - 1) * limitNum;
 
     const query = {};
+    if (status && status !== "all") query.status = status;
 
     if (keyword) {
         query.$or = [
             { title: { $regex: keyword, $options: 'i' } },
             { description: { $regex: keyword, $options: 'i' } },
             { skills: { $regex: keyword, $options: 'i' } },
+            { requirements: { $regex: keyword, $options: 'i' } },
+            { location: { $regex: keyword, $options: 'i' } },
         ];
     }
 
-    if (jobType) query.jobType = jobType;
+    if (jobType && jobType !== "all") query.jobType = jobType;
     if (location) query.location = { $regex: location, $options: 'i' };
+    if (salaryRange && salaryRange !== "all") {
+        if (salaryRange === "under-500k") query.salaryMax = { $lte: 500000 };
+        if (salaryRange === "500k-2m") query.salaryMax = { $gte: 500000, $lte: 2000000 };
+        if (salaryRange === "2m-plus") query.salaryMax = { $gte: 2000000 };
+    }
+    if (workMode && workMode !== "all") {
+        const remotePattern = /remote/i;
+        if (workMode === "remote") {
+            query.$and = [...(query.$and || []), {
+                $or: [
+                    { location: remotePattern },
+                    { jobType: remotePattern },
+                ],
+            }];
+        }
+        if (workMode === "onsite") {
+            query.$and = [...(query.$and || []), {
+                location: { $not: remotePattern },
+                jobType: { $not: remotePattern },
+            }];
+        }
+    }
+    if (experienceLevel && experienceLevel !== "all") {
+        const experiencePatterns = {
+            entry: /(entry|junior|0|1|2)/i,
+            mid: /(mid|intermediate|3|4|5)/i,
+            senior: /(senior|lead|6|7|8|9|10)/i,
+        };
+        if (experiencePatterns[experienceLevel]) {
+            query.experience = experiencePatterns[experienceLevel];
+        }
+    }
+
+    const sortOptions = {
+        newest: { createdAt: -1 },
+        oldest: { createdAt: 1 },
+        salary: { salaryMax: -1, salaryMin: -1 },
+        relevance: keyword ? { createdAt: -1 } : { createdAt: -1 },
+    };
 
     // Perform data fetching and total count in parallel
     const [jobs, totalJobs] = await Promise.all([
         Job.find(query)
             .populate('company', 'name logo website')
-            .sort({ createdAt: -1 })
+            .sort(sortOptions[sortBy] || sortOptions.newest)
             .skip(skip)
             .limit(limitNum)
             .lean(), // Returns plain JS objects, much faster for reads

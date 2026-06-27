@@ -2,17 +2,25 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import useGetAppliedJobs from "./Hooks/useGetAppliedJobs";
+import useGetAllJobs from "./Hooks/useGetAllJobs";
 import { Card, StatCard, ProgressBar, ButtonPrimary, Badge, EmptyState, SectionHeader } from "../../components/DesignSystem";
-import { Briefcase, TrendingUp, CheckCircle, Clock, AlertCircle, Zap, Target, User, Download, Share2 } from "lucide-react";
+import { Bookmark, Briefcase, TrendingUp, CheckCircle, Clock, AlertCircle, Zap, Target, User, Download } from "lucide-react";
 import { ROUTES } from "../../routes/paths";
 
 const Dashboard = () => {
   const { user } = useSelector((store) => store.auth);
-  const { allAppliedJobs } = useSelector((store) => store.job);
+  const { allAppliedJobs, allJobs } = useSelector((store) => store.job);
   const navigate = useNavigate();
   const [statsData, setStatsData] = useState(null);
+  const [savedIds, setSavedIds] = useState([]);
 
   useGetAppliedJobs();
+  useGetAllJobs();
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem("nextjobSavedJobs") || "[]";
+    setSavedIds(JSON.parse(stored));
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -29,15 +37,15 @@ const Dashboard = () => {
     // Calculate dashboard statistics
     if (allAppliedJobs && user) {
       const completionItems = [
-        Boolean(user?.profile?.fullname),
+        Boolean(user?.fullname),
         Boolean(user?.profile?.bio),
         Boolean(user?.profile?.resume),
         Boolean(user?.profile?.skills?.length),
       ];
       const completion = Math.round((completionItems.filter(Boolean).length / completionItems.length) * 100);
       
-      const acceptedJobs = allAppliedJobs.filter(job => job.status === 'accepted').length;
-      const pendingJobs = allAppliedJobs.filter(job => job.status === 'pending').length;
+      const acceptedJobs = allAppliedJobs.filter(application => application.status === 'accepted' || application.interviewStage === 'hired').length;
+      const pendingJobs = allAppliedJobs.filter(application => application.status === 'pending' || application.interviewStage === 'applied').length;
       const thisMonthJobs = allAppliedJobs.filter(job => {
         const jobDate = new Date(job.createdAt);
         const now = new Date();
@@ -63,6 +71,20 @@ const Dashboard = () => {
   }
 
   const latestApplications = allAppliedJobs?.slice(0, 5) || [];
+  const appliedJobIds = new Set(allAppliedJobs?.map((application) => application?.job?._id || application?.job).filter(Boolean));
+  const savedJobs = allJobs?.filter((job) => savedIds.includes(job._id || job.id)).slice(0, 3) || [];
+  const userSkills = user?.profile?.skills || [];
+  const recommendedJobs = allJobs
+    ?.filter((job) => !appliedJobIds.has(job._id))
+    ?.map((job) => {
+      const jobSkills = job?.skills || job?.requirements || [];
+      const matchCount = jobSkills.filter((skill) =>
+        userSkills.some((userSkill) => userSkill.toLowerCase() === skill.toLowerCase())
+      ).length;
+      return { ...job, matchCount };
+    })
+    ?.sort((a, b) => b.matchCount - a.matchCount || new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+    ?.slice(0, 3) || [];
   const nextSteps = [
     { completed: !!user?.profile?.fullname, label: "Complete Profile", action: () => navigate("/profile"), icon: <User size={18} /> },
     { completed: !!user?.profile?.resume, label: "Upload Resume", action: () => navigate("/profile"), icon: <Download size={18} /> },
@@ -73,16 +95,16 @@ const Dashboard = () => {
   const completedSteps = nextSteps.filter(s => s.completed).length;
 
   return (
-    <main className="min-h-screen bg-black-50">
+    <main className="min-h-screen bg-slate-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         {/* Welcome Header */}
-        <div className="mb-8 rounded-3xl border-2 border-black-100 bg-gradient-to-br from-orange-50 to-white p-8 shadow-soft">
+        <div className="mb-8 rounded-3xl border-2 border-slate-100 bg-gradient-to-br from-orange-50 to-white p-8 shadow-soft">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-widest text-orange-600">Freelancer Dashboard</p>
-              <h1 className="mt-3 text-4xl font-bold text-black-900">Welcome back, {user?.fullname || user?.email}! 👋</h1>
-              <p className="mt-3 max-w-2xl text-base text-black-600">
-                You're doing great! Keep applying to jobs and building your profile. Here's your progress so far.
+              <p className="text-sm font-semibold uppercase tracking-widest text-orange-600">Employee Dashboard</p>
+              <h1 className="mt-3 text-4xl font-bold text-slate-950">Welcome back, {user?.fullname || user?.email}</h1>
+              <p className="mt-3 max-w-2xl text-base text-slate-600">
+                Track your applications, improve your profile, and keep your job search moving from one place.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -132,12 +154,75 @@ const Dashboard = () => {
           />
         </div>
 
+        <div className="grid gap-6 mb-8 lg:grid-cols-[1.2fr_0.8fr]">
+          <Card>
+            <SectionHeader
+              title="Recommended Jobs"
+              subtitle="Matched from your skills and recent openings"
+              action={<Link to={ROUTES.BROWSE} className="text-orange-600 font-semibold hover:text-orange-700">Search all</Link>}
+            />
+            {recommendedJobs.length === 0 ? (
+              <EmptyState
+                icon={Target}
+                title="No recommendations yet"
+                description="Add skills to your profile or check back after more jobs are posted."
+                action={<Link to={ROUTES.PROFILE} className="inline-block px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all">Improve profile</Link>}
+              />
+            ) : (
+              <div className="space-y-3">
+                {recommendedJobs.map((job) => (
+                  <Link
+                    key={job._id}
+                    to={`/description/${job._id}`}
+                    className="block rounded-xl border border-slate-200 bg-white p-4 transition hover:border-orange-300 hover:shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="font-bold text-slate-950">{job.title}</p>
+                        <p className="mt-1 text-sm text-slate-500">{job.company?.name || "Company"} - {job.location || "Remote"}</p>
+                      </div>
+                      <Badge variant={job.matchCount > 0 ? "success" : "secondary"}>
+                        {job.matchCount > 0 ? `${job.matchCount} skill match` : "New"}
+                      </Badge>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </Card>
+
+          <Card>
+            <SectionHeader
+              title="Saved Jobs"
+              subtitle="Jobs you marked for later"
+              action={<Link to={ROUTES.SAVED_JOBS} className="text-orange-600 font-semibold hover:text-orange-700">View saved</Link>}
+            />
+            {savedJobs.length === 0 ? (
+              <EmptyState
+                icon={Bookmark}
+                title="No saved jobs"
+                description="Save jobs from search so you can compare them before applying."
+                action={<Link to={ROUTES.BROWSE} className="inline-block px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all">Browse jobs</Link>}
+              />
+            ) : (
+              <div className="space-y-3">
+                {savedJobs.map((job) => (
+                  <Link key={job._id || job.id} to={`/description/${job._id || job.id}`} className="block rounded-xl border border-slate-200 p-4 hover:border-orange-300">
+                    <p className="font-bold text-slate-950">{job.title}</p>
+                    <p className="mt-1 text-sm text-slate-500">{job.company?.name || "Company"} - {job.jobType || "Role"}</p>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </Card>
+        </div>
+
         {/* Profile Completion */}
         <Card className="mb-8 bg-gradient-to-br from-orange-50 to-white">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-lg font-bold text-black-900">Profile Strength</h3>
-              <p className="text-sm text-black-600 mt-1">Complete your profile to attract more clients and opportunities</p>
+              <p className="text-sm text-black-600 mt-1">Complete your profile to stand out to employers</p>
             </div>
             <div className="text-3xl font-bold text-orange-600">{statsData.completion}%</div>
           </div>
@@ -146,7 +231,7 @@ const Dashboard = () => {
             <h4 className="font-semibold text-black-900 mb-4">Complete These to Boost Profile:</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {[
-                { completed: !!user?.profile?.fullname, label: "Full Name" },
+                { completed: !!user?.fullname, label: "Full Name" },
                 { completed: !!user?.profile?.bio, label: "Professional Bio" },
                 { completed: !!user?.profile?.resume, label: "Upload Resume" },
                 { completed: (user?.profile?.skills?.length || 0) > 0, label: "Add Skills" },
@@ -196,7 +281,7 @@ const Dashboard = () => {
           </Card>
 
           <Card className="bg-gradient-to-br from-teal-50 to-white">
-            <h3 className="text-lg font-bold text-black-900 mb-4">You're Making Progress! 🎉</h3>
+            <h3 className="text-lg font-bold text-black-900 mb-4">Job Search Progress</h3>
             <div className="space-y-4">
               <div>
                 <p className="text-sm text-black-600 mb-2">Completion Progress</p>
@@ -205,7 +290,7 @@ const Dashboard = () => {
               <div className="p-4 bg-white rounded-lg border border-teal-200">
                 <p className="text-sm text-black-700">
                   {completedSteps === nextSteps.length 
-                    ? "✨ Excellent! Your profile is well-optimized. Keep applying to more jobs!" 
+                    ? "Excellent. Your profile is in good shape, so keep applying to strong matches." 
                     : `You're ${Math.round((completedSteps / nextSteps.length) * 100)}% of the way to a complete profile!`}
                 </p>
               </div>
@@ -238,12 +323,13 @@ const Dashboard = () => {
               {latestApplications.map((job, idx) => (
                 <Card key={idx} hoverable className="flex items-center justify-between p-6">
                   <div className="flex-1">
-                    <h4 className="font-bold text-black-900 text-lg mb-2">{job.title}</h4>
-                    <p className="text-black-600 text-sm mb-3">{job.company}</p>
+                    <h4 className="font-bold text-black-900 text-lg mb-2">{job?.job?.title || job.title}</h4>
+                    <p className="text-black-600 text-sm mb-3">{job?.job?.company?.name || job.company?.name || "Company"}</p>
                     <div className="flex items-center gap-2">
-                      {job.status === 'accepted' && <Badge variant="success">Accepted</Badge>}
-                      {job.status === 'pending' && <Badge variant="warning">Under Review</Badge>}
-                      {job.status === 'rejected' && <Badge variant="secondary">Not Selected</Badge>}
+                      {(job.status === 'accepted' || job.interviewStage === 'hired') && <Badge variant="success">Hired</Badge>}
+                      {(job.interviewStage === 'interview' || job.interviewStage === 'screening') && <Badge variant="warning">Interview</Badge>}
+                      {(job.status === 'pending' || job.interviewStage === 'applied') && <Badge variant="warning">Applied</Badge>}
+                      {job.status === 'rejected' && <Badge variant="secondary">Rejected</Badge>}
                     </div>
                   </div>
                   <div className="text-right">
@@ -251,7 +337,7 @@ const Dashboard = () => {
                       Applied {new Date(job.createdAt).toLocaleDateString()}
                     </p>
                     <Link 
-                      to={`/description/${job._id}`}
+                      to={`/description/${job?.job?._id || job._id}`}
                       className="inline-flex items-center gap-2 text-orange-600 font-semibold hover:text-orange-700"
                     >
                       View Job →

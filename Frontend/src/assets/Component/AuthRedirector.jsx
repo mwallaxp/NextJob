@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import Home from './Auth/Home'; // Assuming Home is your landing page component
-import { ROUTES } from '../../routes/paths';
+import { getDashboardRouteForRole } from '../../routes/paths';
 
 const AuthRedirector = () => {
   const { user } = useSelector((store) => store.auth);
@@ -10,13 +10,7 @@ const AuthRedirector = () => {
 
   useEffect(() => {
     if (user) {
-      // User is logged in, redirect to appropriate dashboard
-      if (user.role === 'recruiter') {
-        navigate(ROUTES.RECRUITER, { replace: true });
-      } else {
-        // Assuming 'candidate' or other roles go to the main dashboard
-        navigate(ROUTES.STUDENT_DASHBOARD, { replace: true });
-      }
+      navigate(getDashboardRouteForRole(user.role), { replace: true });
     }
     // If user is null, Home component will be rendered
   }, [user, navigate]);

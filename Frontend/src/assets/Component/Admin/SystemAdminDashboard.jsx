@@ -53,7 +53,7 @@ const SystemAdminDashboard = () => {
         {error && <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">{error}</div>}
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <AdminStat icon={<Users size={18} />} label="Candidates" value={stats?.candidates || 0} />
+          <AdminStat icon={<Users size={18} />} label="Employees" value={stats?.candidates || 0} />
           <AdminStat icon={<Shield size={18} />} label="Recruiters" value={stats?.recruiters || 0} />
           <AdminStat icon={<Briefcase size={18} />} label="Total jobs" value={stats?.totalJobs || 0} />
           <AdminStat icon={<Activity size={18} />} label="Active jobs" value={stats?.activeJobs || 0} />
