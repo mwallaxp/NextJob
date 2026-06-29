@@ -5,8 +5,7 @@ import catchAsync from '../catchAsync.js';
  * Middleware to log all requests made by an admin to admin-protected routes.
  */
 const adminRequestLogger = catchAsync(async (req, res, next) => {
-  // This middleware should run after authentication, so req.role and req.id are available.
-  // We only log requests from users identified as 'admin'.
+  
   if (req.role !== 'admin' || !req.id) {
     return next();
   }
