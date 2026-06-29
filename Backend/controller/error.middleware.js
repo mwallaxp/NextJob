@@ -1,4 +1,5 @@
 import AppError from '../AppError.js';
+import logger from '../utility/logger.js'; // Assuming you create a logger utility
 
 const handleCastErrorDB = err => {
   const message = `Invalid ${err.path}: ${err.value}.`;
@@ -36,8 +37,13 @@ const sendErrorProd = (err, res) => {
   } 
   // Programming or other unknown error: don't leak error details
   else {
-    // 1) Log error for the developers
-    console.error('ERROR 💥', err);
+    // 1) Log the error using a structured logger
+    logger.error({
+      message: 'UNHANDLED_ERROR 💥',
+      err: err, // The logger will serialize the error object
+      stack: err.stack,
+      path: req.path,
+    });
 
     // 2) Send generic message to the client
     res.status(500).json({

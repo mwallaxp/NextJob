@@ -27,6 +27,8 @@ import globalErrorHandler from "./error.js";
 dotenv.config({})
 
 const app = express();
+app.set("trust proxy", 1);
+
 const server = http.createServer(app);
 
 // Rate Limiting: Prevent brute force and abuse
@@ -37,7 +39,7 @@ const limiter = rateLimit({
 });
 
 // Build allowed origins list from env var (comma separated) or single CLIENT_URL
-const rawClientUrls = process.env.CLIENT_URLS || process.env.CLIENT_URL || "https://next-job-vubs.vercel.app";
+const rawClientUrls = process.env.CLIENT_URLS || process.env.CLIENT_URL || "https://next-job-vubs.vercel.app,https://next-job-three.vercel.app";
 const allowedOrigins = Array.isArray(rawClientUrls)
   ? rawClientUrls
   : rawClientUrls.split(',').map((u) => u.trim()).filter(Boolean);
@@ -59,26 +61,30 @@ const io = new Server(server, {
 
 io.use(async (socket, next) => {
   try {
-    const authToken = socket.handshake.auth?.token;
-    const bearerToken = socket.handshake.headers?.authorization?.startsWith("Bearer ")
-      ? socket.handshake.headers.authorization.split(" ")[1]
-      : null;
-    const cookieToken = socket.handshake.headers?.cookie
-      ?.split(";")
-      .map((value) => value.trim())
-      .find((value) => value.startsWith("token="))
-      ?.split("=")[1];
-    const token = authToken || bearerToken || cookieToken;
+    const token = socket.handshake.auth?.token ||
+      socket.handshake.headers?.authorization?.split(" ")[1] ||
+      socket.handshake.headers?.cookie?.split("=")[1];
 
-    if (!token) return next();
+    if (!token) {
+      return next(); // Allow unauthenticated connections
+    }
 
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
     const userId = decoded.userId || decoded.id;
     const user = await User.findById(userId).select("_id role fullname");
-    if (user) socket.user = user;
+    if (user) {
+      socket.user = user;
+    }
     next();
-  } catch {
-    next();
+  } catch (err) {
+    if (err instanceof jwt.JsonWebTokenError) {
+      // e.g., invalid signature, malformed token
+      console.error("Socket Auth Error:", err.message);
+      return next(new Error("Authentication error: Invalid token."));
+    }
+    // For other errors, you might still want to allow connection
+    // or handle them differently.
+    next(); // Or next(new Error("Internal server error"));
   }
 });
 
@@ -87,7 +93,8 @@ app.use("/api", limiter); // Apply rate limiting to all API routes
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
-app.use(bodyParser.json())
+// Parsers should come before logging and routes
+app.use(bodyParser.json());
 app.use(cookieParser());
 
 const corsOptions = {
