@@ -1,6 +1,8 @@
 import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
+import path from "path";
+import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import rateLimit from "express-rate-limit";
 import http from "http";
@@ -8,10 +10,10 @@ import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import User from "./modules/user.model.js";
 import connectDB from "./utility/db.js"
-import userRouter from "./routes/user.route.js";
-import companyRouter from "./routes/company.router.js";
-import jobRouter from "./routes/job.route.js";
-import applicationRouter from "./routes/application.route.js";
+import userRouter from "./routes/user.route.js"; // Correct
+import companyRouter from "./routes/company.router.js"; // Correct
+import jobRouter from "./routes/job.route.js"; // Correct
+import applicationRouter from "./routes/application.route.js"; // Correct
 import adminRequestLogger from "./middleware/adminAudit.middleware.js";
 import paymentRouter from "./routes/payment.route.js";
 import adminRouter from "./routes/admin.route.js";
@@ -25,6 +27,10 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import cookie from "cookie"; // Import the cookie library
 import globalErrorHandler from "./error.js";
+
+// Resolve __dirname for ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config({})
 
