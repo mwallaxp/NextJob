@@ -1,12 +1,10 @@
 import AuditLog from '../modules/auditLog.model.js';
 import catchAsync from '../catchAsync.js';
-// Ensure this file is tracked by Git to resolve deployment errors.
 
 /**
  * Middleware to log all requests made by an admin to admin-protected routes.
  */
 const adminRequestLogger = catchAsync(async (req, res, next) => {
-  
   if (req.role !== 'admin' || !req.id) {
     return next();
   }
@@ -22,7 +20,7 @@ const adminRequestLogger = catchAsync(async (req, res, next) => {
     params: req.params,
   };
 
-  // Redact sensitive information before logging
+  // Redact sensitive information before logging.
   if (details.body?.password) details.body.password = '[REDACTED]';
 
   await AuditLog.create({

@@ -32,12 +32,24 @@ export const getNotifications = catchAsync(async (req, res, next) => {
 export const markNotificationsAsRead = catchAsync(async (req, res, next) => {
     // Mark all notifications for the user as read
     await Notification.updateMany(
-        { recipient: req.id, read: false },
-        { $set: { read: true, readAt: new Date() } }
+        { recipient: req.id, isRead: false },
+        { $set: { isRead: true } }
     );
 
     res.status(200).json({
         success: true,
         message: 'All notifications marked as read.',
+    });
+});
+
+/**
+ * Clear all notifications for the logged-in user.
+ */
+export const clearNotifications = catchAsync(async (req, res, next) => {
+    await Notification.deleteMany({ recipient: req.id });
+
+    res.status(200).json({
+        success: true,
+        message: 'All notifications cleared.',
     });
 });
