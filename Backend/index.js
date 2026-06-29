@@ -1,7 +1,6 @@
 import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
-import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import rateLimit from "express-rate-limit";
 import http from "http";
@@ -13,7 +12,7 @@ import userRouter from "./routes/user.route.js"
 import companyRoute from "./routes/company.router.js";
 import JobRoute from "./routes/job.route.js"
 import ApplicationRouter from "./routes/application.route.js";
-import adminRequestLogger from "./middleware/adminAudit.middleware.js"; // Import the new middleware
+import adminRequestLogger from "./middleware/adminAudit.middleware.js";
 import paymentRouter from "./routes/payment.route.js";
 import adminRouter from "./routes/admin.route.js";
 import messageRouter from "./routes/message.route.js";
@@ -24,6 +23,7 @@ import notificationRouter from "./routes/notification.route.js"; // Import the n
 import disputeRouter from "./routes/dispute.route.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import cookie from "cookie"; // Import the cookie library
 import globalErrorHandler from "./error.js";
 
 dotenv.config({})
@@ -63,10 +63,11 @@ const io = new Server(server, {
 
 io.use(async (socket, next) => {
   try {
+    const cookies = socket.handshake.headers.cookie ? cookie.parse(socket.handshake.headers.cookie) : {};
     const token = socket.handshake.auth?.token ||
       socket.handshake.headers?.authorization?.split(" ")[1] ||
-      socket.handshake.headers?.cookie?.split("=")[1];
-
+      cookies.token;
+      
     if (!token) {
       return next(); // Allow unauthenticated connections
     }
@@ -84,9 +85,9 @@ io.use(async (socket, next) => {
       console.error("Socket Auth Error:", err.message);
       return next(new Error("Authentication error: Invalid token."));
     }
-    // For other errors, you might still want to allow connection
-    // or handle them differently.
-    next(); // Or next(new Error("Internal server error"));
+    // For other unknown errors during auth, it's safer to deny connection.
+    console.error("Socket Auth - Internal Error:", err);
+    return next(new Error("Internal server error"));
   }
 });
 
@@ -96,8 +97,8 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 // Parsers should come before logging and routes
-app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(express.json()); // Use modern express json parser
 
 const corsOptions = {
   origin: (origin, callback) => {
@@ -122,10 +123,13 @@ io.on("connection", (socket) => {
 
   // User joins their personal notification room based on ID
   socket.on("join-notifications", (userId) => {
-    const roomUserId = socket.user?._id || userId;
-    if (socket.user && String(userId) !== String(socket.user._id)) return;
-    socket.join(`user_${roomUserId}`);
-    console.log(`User ${roomUserId} joined notification room`);
+    // Only allow authenticated users to join their own room
+    if (socket.user && String(userId) === String(socket.user._id)) {
+      socket.join(`user_${userId}`);
+      console.log(`User ${userId} joined notification room`);
+    } else {
+      console.warn(`Unauthorized attempt to join notification room for user ${userId}`);
+    }
   });
 
   // Join a conversation room for chat
@@ -165,7 +169,7 @@ app.use("/api/v1/user", userRouter); // Added semicolon for consistency
 app.use("/api/v1/company", companyRoute)
 app.use("/api/v1/job", JobRoute)
 app.use("/api/v1/application", ApplicationRouter)
-app.use("/api/v1/payment", paymentRouter) 
+app.use("/api/v1/payment", paymentRouter)
 app.use("/api/v1/admin", adminRequestLogger, adminRouter) // Apply the audit logger before the admin router
 app.use("/api/v1/messages", messageRouter)
 app.use("/api/v1/reviews", reviewRouter)
