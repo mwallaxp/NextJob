@@ -20,6 +20,7 @@ import messageRouter from "./routes/message.route.js";
 import reviewRouter from "./routes/review.route.js";
 import portfolioRouter from "./routes/portfolio.route.js";
 import verificationRouter from "./routes/verification.route.js";
+import notificationRouter from "./routes/notification.route.js"; // Import the new router
 import disputeRouter from "./routes/dispute.route.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -170,6 +171,7 @@ app.use("/api/v1/messages", messageRouter)
 app.use("/api/v1/reviews", reviewRouter)
 app.use("/api/v1/portfolio", portfolioRouter)
 app.use("/api/v1/verification", verificationRouter)
+app.use("/api/v1/notification", notificationRouter) // Use the new router
 app.use("/api/v1/disputes", disputeRouter)
 
 app.use(globalErrorHandler);

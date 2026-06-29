@@ -1,31 +1,43 @@
 import Notification from '../modules/notification.model.js';
 import catchAsync from '../catchAsync.js';
-import AppError from '../AppError.js';
 
+/**
+ * Get all notifications for the logged-in user, with pagination.
+ */
 export const getNotifications = catchAsync(async (req, res, next) => {
-    const userId = req.id;
-    const notifications = await Notification.find({ recipient: userId })
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const query = { recipient: req.id };
+
+    const notifications = await Notification.find(query)
+        .populate('sender', 'fullname profile.avatar')
         .sort({ createdAt: -1 })
-        .populate('sender', 'fullname profilePhoto');
+        .skip((page - 1) * limit)
+        .limit(limit);
+
+    const total = await Notification.countDocuments(query);
 
     res.status(200).json({
         success: true,
-        notifications
+        notifications,
+        total,
+        pages: Math.ceil(total / limit),
     });
 });
 
-export const markAsRead = catchAsync(async (req, res, next) => {
-    const { id } = req.params;
-    const notification = await Notification.findByIdAndUpdate(id, { isRead: true }, { new: true });
-    
-    if (!notification) return next(new AppError("Notification not found", 404));
+/**
+ * Mark notifications as read.
+ */
+export const markNotificationsAsRead = catchAsync(async (req, res, next) => {
+    // Mark all notifications for the user as read
+    await Notification.updateMany(
+        { recipient: req.id, read: false },
+        { $set: { read: true, readAt: new Date() } }
+    );
 
-    res.status(200).json({ success: true, message: "Marked as read" });
-});
-
-export const clearAllNotifications = catchAsync(async (req, res, next) => {
-    const userId = req.id;
-    await Notification.deleteMany({ recipient: userId });
-    
-    res.status(200).json({ success: true, message: "Notifications cleared" });
+    res.status(200).json({
+        success: true,
+        message: 'All notifications marked as read.',
+    });
 });
