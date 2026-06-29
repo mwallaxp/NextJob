@@ -8,10 +8,10 @@ import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import User from "./modules/user.model.js";
 import connectDB from "./utility/db.js"
-import userRouter from "./routes/user.route.js"
-import companyRoute from "./routes/company.router.js";
-import JobRoute from "./routes/job.route.js"
-import ApplicationRouter from "./routes/application.route.js";
+import userRouter from "./routes/user.route.js";
+import companyRouter from "./routes/company.router.js";
+import jobRouter from "./routes/job.route.js";
+import applicationRouter from "./routes/application.route.js";
 import adminRequestLogger from "./middleware/adminAudit.middleware.js";
 import paymentRouter from "./routes/payment.route.js";
 import adminRouter from "./routes/admin.route.js";
@@ -166,9 +166,9 @@ io.on("connection", (socket) => {
 
 const PORT = process.env.PORT || 3000;
 app.use("/api/v1/user", userRouter); // Added semicolon for consistency
-app.use("/api/v1/company", companyRoute)
-app.use("/api/v1/job", JobRoute)
-app.use("/api/v1/application", ApplicationRouter)
+app.use("/api/v1/company", companyRouter)
+app.use("/api/v1/job", jobRouter)
+app.use("/api/v1/application", applicationRouter)
 app.use("/api/v1/payment", paymentRouter)
 app.use("/api/v1/admin", adminRequestLogger, adminRouter) // Apply the audit logger before the admin router
 app.use("/api/v1/messages", messageRouter)
@@ -180,16 +180,16 @@ app.use("/api/v1/disputes", disputeRouter)
 
 app.use(globalErrorHandler);
 
-// Explicitly bind to 0.0.0.0 for Render deployment
+// Explicitly bind to 0.0.0.0 for containerized environments like Render
 if (process.env.NODE_ENV !== "test") {
-server.listen(PORT, "0.0.0.0", async () => {
-    try {
-        await connectDB();
-        console.log(`Server listening on port ${PORT}`);
-    } catch (err) {
-        console.error("Failed to connect to DB on startup:", err);
-    }
-});
+  server.listen(PORT, "0.0.0.0", async () => {
+      try {
+          await connectDB();
+          console.log(`Server listening on port ${PORT}`);
+      } catch (err) {
+          console.error("Failed to connect to DB on startup:", err);
+      }
+  });
 }
 
 export default app;
