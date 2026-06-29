@@ -13,6 +13,7 @@ import userRouter from "./routes/user.route.js"
 import companyRoute from "./routes/company.router.js";
 import JobRoute from "./routes/job.route.js"
 import ApplicationRouter from "./routes/application.route.js";
+import adminRequestLogger from "./middleware/adminAudit.middleware.js"; // Import the new middleware
 import paymentRouter from "./routes/payment.route.js";
 import adminRouter from "./routes/admin.route.js";
 import messageRouter from "./routes/message.route.js";
@@ -163,8 +164,8 @@ app.use("/api/v1/user", userRouter); // Added semicolon for consistency
 app.use("/api/v1/company", companyRoute)
 app.use("/api/v1/job", JobRoute)
 app.use("/api/v1/application", ApplicationRouter)
-app.use("/api/v1/payment", paymentRouter)
-app.use("/api/v1/admin", adminRouter)
+app.use("/api/v1/payment", paymentRouter) 
+app.use("/api/v1/admin", adminRequestLogger, adminRouter) // Apply the audit logger before the admin router
 app.use("/api/v1/messages", messageRouter)
 app.use("/api/v1/reviews", reviewRouter)
 app.use("/api/v1/portfolio", portfolioRouter)
